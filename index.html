@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>合规透镜 Compliance Lens - EU电池法合规解析</title>
+<title>合规透镜 Compliance Lens - EU电池法三方推演</title>
 <!-- Google Analytics 4 - 请替换 G-XXXXXXXXXX 为你的追踪ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7YHXE1F7XG"></script>
 <script>
@@ -270,7 +270,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                 </div>
             </div>
             <p class="text-white/70 text-sm leading-relaxed max-w-xs">
-                EU电池法合规解析引擎<br>
+                EU电池法三方推演引擎<br>
                 <span class="text-white/40">审计员 · 法规顾问 · 下游客户</span>
             </p>
         </div>
@@ -297,7 +297,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             <button onclick="startDebate()" id="btn-start"
                 class="btn-primary w-full mt-4 text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <span>获取合规解析</span>
+                <span>获取三方推演</span>
             </button>
         </div>
         
@@ -448,7 +448,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                     <p class="text-white/50 text-[10px] font-medium tracking-wider">COMPLIANCE LENS</p>
                 </div>
             </div>
-            <p class="text-white/50 text-xs">EU电池法 · 合规解析报告</p>
+            <p class="text-white/50 text-xs">EU电池法 · 三方推演报告</p>
         </div>
         <div class="p-5">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">合规困惑</p>
@@ -1032,7 +1032,7 @@ async function downloadShareCard() {
     try {
         const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
         const link = document.createElement('a');
-        link.download = '合规透镜-合规解析报告.png';
+        link.download = '合规透镜-三方推演报告.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         showToast('图片已保存');
@@ -1075,7 +1075,7 @@ function fallbackCopy(text) {
 }
 
 function generateCopyText() {
-    let text = `【合规透镜 · 合规解析报告】\n\n困惑：${currentQuestion}\n\n`;
+    let text = `【合规透镜 · 三方推演报告】\n\n困惑：${currentQuestion}\n\n`;
     if (currentResult.auditor) text += `👤 审计员：${currentResult.auditor.statement}\n→ ${currentResult.auditor.action} [${currentResult.auditor.risk}]\n\n`;
     if (currentResult.legal) text += `👤 法规顾问：${currentResult.legal.statement}\n→ ${currentResult.legal.action} [${currentResult.legal.risk}]\n\n`;
     if (currentResult.market) text += `👤 下游客户：${currentResult.market.statement}\n→ ${currentResult.market.action} [${currentResult.market.risk}]\n\n`;
