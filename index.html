@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>合规透镜 Compliance Lens - EU电池法三方会诊</title>
+<title>合规透镜 Compliance Lens - EU电池法合规解析</title>
 <!-- Google Analytics 4 - 请替换 G-XXXXXXXXXX 为你的追踪ID -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-7YHXE1F7XG"></script>
 <script>
@@ -270,7 +270,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                 </div>
             </div>
             <p class="text-white/70 text-sm leading-relaxed max-w-xs">
-                EU电池法三方会诊引擎<br>
+                EU电池法合规解析引擎<br>
                 <span class="text-white/40">审计员 · 法规顾问 · 下游客户</span>
             </p>
         </div>
@@ -297,7 +297,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             <button onclick="startDebate()" id="btn-start"
                 class="btn-primary w-full mt-4 text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <span>开始三方会诊</span>
+                <span>获取合规解析</span>
             </button>
         </div>
         
@@ -331,6 +331,20 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                     <div class="text-xl mb-1.5">🌍</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库？</div>
                 </button>
+            </div>
+        </div>
+        
+        <!-- 免责声明 -->
+        <div class="mt-6 mx-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+            <div class="flex items-start gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>
+                    <p class="text-[11px] font-bold text-gray-500 mb-1">免责声明</p>
+                    <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 模型生成建议，仅供参考，不构成法律意见或专业咨询。具体合规操作请咨询认证律师或专业机构。模型输出可能存在偏差，请以欧盟官方法规为准。</p>
+                </div>
+            </div>
+            <div class="mt-2 pt-2 border-t border-gray-200">
+                <p class="text-[10px] text-gray-400">每日限量免费试用（5次/人）</p>
             </div>
         </div>
         
@@ -372,7 +386,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             </div>
         </div>
         
-        <h2 class="text-lg font-bold text-gray-800 mb-1" id="loading-title">正在召集三方会诊</h2>
+        <h2 class="text-lg font-bold text-gray-800 mb-1" id="loading-title">正在分析</h2>
         <p class="text-sm text-gray-400" id="loading-text">审计员正在审阅你的材料</p>
         
         <div class="mt-10 w-60 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
@@ -391,12 +405,20 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         </button>
         <div class="flex items-center gap-2 mb-1">
             <div class="w-1.5 h-5 bg-green-400 rounded-full"></div>
-            <h2 class="text-lg font-bold">会诊结果</h2>
+            <h2 class="text-lg font-bold">分析结果</h2>
         </div>
         <p class="text-white/50 text-sm mt-1 line-clamp-2 safe-text" id="result-question"></p>
     </div>
     
     <div class="px-4 -mt-3" id="result-container"></div>
+    
+    <!-- 结果页免责声明 -->
+    <div class="px-4 mt-2 mb-4">
+        <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 生成建议，仅供参考，不构成法律意见。具体合规操作请咨询专业机构。</p>
+        </div>
+    </div>
     
     <!-- 底部操作栏 -->
     <div class="bottom-bar">
@@ -426,7 +448,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                     <p class="text-white/50 text-[10px] font-medium tracking-wider">COMPLIANCE LENS</p>
                 </div>
             </div>
-            <p class="text-white/50 text-xs">EU电池法 · 三方会诊报告</p>
+            <p class="text-white/50 text-xs">EU电池法 · 合规解析报告</p>
         </div>
         <div class="p-5">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">合规困惑</p>
@@ -596,9 +618,38 @@ function hideAll() {
     });
 }
 
+// ====== 限流工具 ======
+function checkDailyLimit() {
+    const MAX_DAILY = 5;
+    const today = new Date().toDateString();
+    const stored = JSON.parse(localStorage.getItem('usage_limit') || '{}');
+    
+    if (stored.date !== today) {
+        localStorage.setItem('usage_limit', JSON.stringify({ date: today, count: 1 }));
+        return { allowed: true, remaining: MAX_DAILY - 1 };
+    }
+    
+    if (stored.count >= MAX_DAILY) {
+        return { allowed: false, remaining: 0 };
+    }
+    
+    stored.count += 1;
+    localStorage.setItem('usage_limit', JSON.stringify(stored));
+    return { allowed: true, remaining: MAX_DAILY - stored.count };
+}
+
 // ====== 核心流程 ======
 async function startDebate(isDemo = false, isFollowUp = false, questionOverride = null) {
     if (isLoading) { showToast('正在处理中，请稍候'); return; }
+    
+    // 限流检查（Demo模式不限流）
+    if (!isDemo) {
+        const limit = checkDailyLimit();
+        if (!limit.allowed) {
+            showToast('今日试用次数已达上限（5/5），明日再来');
+            return;
+        }
+    }
     
     let question;
     if (questionOverride) {
@@ -642,7 +693,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         if (followUp) {
             messages.push({
                 role: 'user',
-                content: `上一轮会诊问题："${followUp.prevQuestion}"\n上一轮会诊结论：\n审计员：${followUp.prevResult.auditor?.statement || ''}\n法规顾问：${followUp.prevResult.legal?.statement || ''}\n下游客户：${followUp.prevResult.market?.statement || ''}\n决策路径：${followUp.prevResult.calculator?.paths?.map(p => p.condition + '→' + p.action).join('; ') || ''}`
+                content: `上一轮分析问题："${followUp.prevQuestion}"\n上一轮分析结论：\n审计员：${followUp.prevResult.auditor?.statement || ''}\n法规顾问：${followUp.prevResult.legal?.statement || ''}\n下游客户：${followUp.prevResult.market?.statement || ''}\n决策路径：${followUp.prevResult.calculator?.paths?.map(p => p.condition + '→' + p.action).join('; ') || ''}`
             });
             messages.push({
                 role: 'assistant',
@@ -653,8 +704,8 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         messages.push({
             role: 'user',
             content: followUp
-                ? `【追问】基于上文，用户进一步问："${question}"\n\n请继续按JSON Schema输出完整会诊结果，必须基于前文上下文进行分析，不要重复已讨论过的内容。`
-                : `用户问题："${question}"\n\n请严格按JSON Schema输出完整会诊结果，不要包含任何额外文字。`
+                ? `【追问】基于上文，用户进一步问："${question}"\n\n请继续按JSON Schema输出完整分析结果，必须基于前文上下文进行分析，不要重复已讨论过的内容。`
+                : `用户问题："${question}"\n\n请严格按JSON Schema输出完整分析结果，不要包含任何额外文字。`
         });
         
         const response = await fetch(API_URL, {
@@ -981,7 +1032,7 @@ async function downloadShareCard() {
     try {
         const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
         const link = document.createElement('a');
-        link.download = '合规透镜-会诊报告.png';
+        link.download = '合规透镜-合规解析报告.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
         showToast('图片已保存');
@@ -1024,7 +1075,7 @@ function fallbackCopy(text) {
 }
 
 function generateCopyText() {
-    let text = `【合规透镜 · 三方会诊报告】\n\n困惑：${currentQuestion}\n\n`;
+    let text = `【合规透镜 · 合规解析报告】\n\n困惑：${currentQuestion}\n\n`;
     if (currentResult.auditor) text += `👤 审计员：${currentResult.auditor.statement}\n→ ${currentResult.auditor.action} [${currentResult.auditor.risk}]\n\n`;
     if (currentResult.legal) text += `👤 法规顾问：${currentResult.legal.statement}\n→ ${currentResult.legal.action} [${currentResult.legal.risk}]\n\n`;
     if (currentResult.market) text += `👤 下游客户：${currentResult.market.statement}\n→ ${currentResult.market.action} [${currentResult.market.risk}]\n\n`;
