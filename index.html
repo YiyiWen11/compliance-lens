@@ -4,6 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>合规透镜 Compliance Lens - EU电池法三方会诊</title>
+<!-- Google Analytics 4 - 请替换 G-XXXXXXXXXX 为你的追踪ID -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-PLACEHOLDER"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-PLACEHOLDER');
+    
+    // 安全的事件追踪封装
+    function trackEvent(eventName, params) {
+        if (typeof gtag === 'function') {
+            gtag('event', eventName, params || {});
+        }
+    }
+</script>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
@@ -520,6 +535,7 @@ const DEMO_DATA = {
 // ====== 导航 ======
 function setQuestion(q) {
     document.getElementById('user-question').value = q;
+    trackEvent('click_preset', { question_preview: q.substring(0, 30) });
 }
 
 function setQuestionAndGo(q) {
@@ -595,6 +611,13 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
     }
     if (!question) { showToast('请输入你的合规困惑'); return; }
     
+    // 追踪用户提问
+    trackEvent(isFollowUp ? 'follow_up' : 'start_consultation', {
+        question_preview: question.substring(0, 50),
+        is_follow_up: isFollowUp,
+        is_demo: isDemo
+    });
+    
     currentQuestion = question;
     isLoading = true;
     showLoading();
@@ -656,12 +679,17 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         const data = await response.json();
         currentResult = parseResponse(data.choices[0].message.content);
         localStorage.removeItem('follow_up');
+        trackEvent('api_success', { question_preview: currentQuestion.substring(0, 30) });
         showResult();
         
     } catch (err) {
         clearTimeout(timeoutId);
         console.error('API调用失败:', err);
         localStorage.removeItem('follow_up');
+        trackEvent('api_fail', { 
+            error_type: err.name === 'AbortError' ? 'timeout' : 'api_error',
+            question_preview: currentQuestion.substring(0, 30)
+        });
         
         if (err.name === 'AbortError') {
             showToast('请求超时，已切换至演示模式');
@@ -957,8 +985,10 @@ async function downloadShareCard() {
         link.href = canvas.toDataURL('image/png');
         link.click();
         showToast('图片已保存');
+        trackEvent('share_card', { method: 'download' });
     } catch (e) {
         showToast('保存失败，请截图');
+        trackEvent('share_card_fail', { error: e.message });
     }
 }
 
@@ -966,7 +996,10 @@ function copyResult() {
     const text = generateCopyText();
     
     if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板')).catch(() => fallbackCopy(text));
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板');
+            trackEvent('copy_result', { method: 'clipboard_api' });
+        }).catch(() => fallbackCopy(text));
     } else {
         fallbackCopy(text);
     }
@@ -982,8 +1015,10 @@ function fallbackCopy(text) {
     try {
         document.execCommand('copy');
         showToast('已复制到剪贴板');
+        trackEvent('copy_result', { method: 'execCommand' });
     } catch (err) {
         showToast('复制失败，请手动复制');
+        trackEvent('copy_result_fail', {});
     }
     document.body.removeChild(textarea);
 }
