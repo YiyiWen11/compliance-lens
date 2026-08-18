@@ -565,7 +565,7 @@ async function submitFollowUp() {
     if (!question) { showToast('请输入追问内容'); return; }
     const card = document.getElementById('follow-up-card');
     if (card) card.remove();
-    await startDebate(false, true);
+    await startDebate(false, true, question);
 }
 
 function goHome() {
@@ -581,11 +581,13 @@ function hideAll() {
 }
 
 // ====== 核心流程 ======
-async function startDebate(isDemo = false, isFollowUp = false) {
+async function startDebate(isDemo = false, isFollowUp = false, questionOverride = null) {
     if (isLoading) { showToast('正在处理中，请稍候'); return; }
     
     let question;
-    if (isFollowUp) {
+    if (questionOverride) {
+        question = questionOverride;
+    } else if (isFollowUp) {
         const input = document.getElementById('follow-up-input');
         question = input ? input.value.trim() : '';
     } else {
