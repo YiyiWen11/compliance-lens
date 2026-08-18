@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>合规透镜 Compliance Lens - EU电池法三方会诊</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+* { -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
+
+/* ===== 品牌配色 ===== */
+:root {
+    --navy: #0f1f3a;
+    --navy-light: #1a3a5c;
+    --green: #059669;
+    --green-light: #10b981;
+    --amber: #d97706;
+    --red: #dc2626;
+    --slate: #64748b;
+    --bg: #f0f4f8;
+    --card: #ffffff;
+}
+
+/* ===== 主视觉 ===== */
+.hero-bg {
+    background: #047857;
+    position: relative;
+    overflow: hidden;
+}
+.hero-bg::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 200%;
+    background: rgba(16,185,129,0.05);
+    pointer-events: none;
+}
+.hero-bg::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+}
+
+/* ===== 卡片系统 ===== */
+.card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.04);
+    transition: all 0.2s ease;
+}
+.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+.card-elevated {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(15,31,58,0.08), 0 12px 32px rgba(15,31,58,0.06);
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+/* ===== 动画 ===== */
+.slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.pulse-ring { animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+@keyframes pulseRing {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5,150,105,0.3); }
+    70% { transform: scale(1); box-shadow: 0 0 0 12px rgba(5,150,105,0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5,150,105,0); }
+}
+
+/* ===== 角色头像 ===== */
+.avatar {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.avatar-auditor { background: #dc2626; }
+.avatar-legal { background: #2563eb; }
+.avatar-market { background: #d97706; }
+.avatar-calc { background: #059669; }
+
+/* ===== 风险标签 ===== */
+.badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    border: 1px solid;
+}
+.badge-red { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.badge-yellow { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.badge-green { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
+
+/* ===== 立场轴 ===== */
+.position-track {
+    height: 8px; border-radius: 4px;
+    background: #e2e8f0;
+    position: relative;
+}
+.position-marker {
+    position: absolute; top: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+/* ===== 时间轴 ===== */
+.timeline-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+/* ===== 输入框 ===== */
+.input-field {
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: #fafbfc;
+    transition: all 0.2s;
+    resize: none;
+}
+.input-field:focus {
+    outline: none;
+    border-color: #059669;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(5,150,105,0.08);
+}
+
+/* ===== 按钮 ===== */
+.btn-primary {
+    background: #059669;
+    color: white; font-weight: 600;
+    padding: 14px 24px; border-radius: 12px;
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(5,150,105,0.25);
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary:active { transform: scale(0.98); box-shadow: 0 2px 6px rgba(5,150,105,0.2); }
+
+.btn-secondary {
+    background: #f1f5f9; color: #475569; font-weight: 500;
+    padding: 12px 20px; border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-secondary:hover { background: #e2e8f0; }
+
+/* ===== 预设卡片 ===== */
+.preset-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1.5px solid #e2e8f0;
+    text-align: left;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.preset-card:hover {
+    border-color: #059669;
+    box-shadow: 0 4px 12px rgba(5,150,105,0.08);
+    transform: translateY(-1px);
+}
+
+/* ===== 追问 ===== */
+.follow-up-card {
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+/* ===== 分享 ===== */
+.share-card {
+    background: white;
+    width: 340px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+}
+
+/* ===== Toast ===== */
+.toast {
+    position: fixed;
+    bottom: max(80px, env(safe-area-inset-bottom) + 60px);
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #0f1f3a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ===== 底部栏 ===== */
+.bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom) + 12px);
+    z-index: 40;
+    display: flex; gap: 10px;
+}
+
+/* ===== 文本安全 ===== */
+.safe-text { overflow-wrap: break-word; word-wrap: break-word; hyphens: auto; }
+
+/* ===== 分隔线 ===== */
+.divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 16px 0;
+}
+</style>
+</head>
+<body class="min-h-screen" style="background: #f0f4f8;">
+
+<!-- ====== 首页 ====== -->
+<div id="page-home" class="min-h-screen flex flex-col">
+    <div class="hero-bg text-white px-6 pt-14 pb-12 relative">
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight">合规透镜</h1>
+                    <p class="text-white/50 text-xs font-medium tracking-wider">COMPLIANCE LENS</p>
+                </div>
+            </div>
+            <p class="text-white/70 text-sm leading-relaxed max-w-xs">
+                EU电池法三方会诊引擎<br>
+                <span class="text-white/40">审计员 · 法规顾问 · 下游客户</span>
+            </p>
+        </div>
+        <!-- 装饰元素 -->
+        <div class="absolute bottom-0 right-0 w-40 h-40 opacity-10">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="80" stroke="white" stroke-width="0.5"/>
+                <circle cx="100" cy="100" r="60" stroke="white" stroke-width="0.5"/>
+                <circle cx="100" cy="100" r="40" stroke="white" stroke-width="0.5"/>
+                <line x1="20" y1="100" x2="180" y2="100" stroke="white" stroke-width="0.5"/>
+                <line x1="100" y1="20" x2="100" y2="180" stroke="white" stroke-width="0.5"/>
+            </svg>
+        </div>
+    </div>
+    
+    <div class="flex-1 px-5 py-6 -mt-6 relative z-10">
+        <div class="card-elevated p-5">
+            <label class="text-sm font-bold text-gray-800 block mb-2">你的合规困惑</label>
+            <p class="text-xs text-gray-400 mb-3">输入一个具体的EU电池法执行问题</p>
+            <textarea id="user-question" rows="3" 
+                class="input-field"
+                placeholder="例如：供应商只给了行业平均数据，没有工厂具体数据，能不能先用着？"></textarea>
+            
+            <button onclick="startDebate()" id="btn-start"
+                class="btn-primary w-full mt-4 text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                <span>开始三方会诊</span>
+            </button>
+        </div>
+        
+        <div class="mt-6">
+            <div class="flex items-center gap-2 mb-3">
+                <div class="w-1 h-4 bg-green-600 rounded-full"></div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">常见问题</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="setQuestion('三年前的实测数据还能用吗？')" class="preset-card">
+                    <div class="text-xl mb-1.5">📅</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">三年前的数据还能用吗？</div>
+                </button>
+                <button onclick="setQuestion('工厂买了绿证和PPA，能用来降低电池碳足迹吗？')" class="preset-card">
+                    <div class="text-xl mb-1.5">🌱</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">绿证/PPA能降碳足迹吗？</div>
+                </button>
+                <button onclick="setQuestion('我们在江苏和四川有两个工厂，能合并算平均值吗？')" class="preset-card">
+                    <div class="text-xl mb-1.5">🏭</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">多工厂数据能合并吗？</div>
+                </button>
+                <button onclick="setQuestion('正极材料供应商只给了行业平均LCA数据，能先用着吗？')" class="preset-card">
+                    <div class="text-xl mb-1.5">📊</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">行业平均值能用吗？</div>
+                </button>
+                <button onclick="setQuestion('电池碳足迹应该算到“摇篮到大门”还是“摇篮到坟墓”？')" class="preset-card">
+                    <div class="text-xl mb-1.5">⚰️</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">算到大门还是坟墓？</div>
+                </button>
+                <button onclick="setQuestion('欧盟不认中国的排放因子数据库，我的数据会有偏差吗？该怎么解决？')" class="preset-card">
+                    <div class="text-xl mb-1.5">🌍</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库？</div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 品牌标识 -->
+        <div class="mt-8 mb-4 flex items-center justify-center gap-2 text-gray-400">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            <span class="text-xs font-medium">电池出海合规Lab 出品</span>
+        </div>
+    </div>
+</div>
+
+<!-- ====== 加载页 ====== -->
+<div id="page-loading" class="hidden min-h-screen flex flex-col items-center justify-center" style="background: #f0f4f8;">
+    <div class="text-center px-6">
+        <div class="flex justify-center gap-6 mb-10">
+            <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-xl pulse-ring" style="animation-delay:0s">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-red-600 border-2 border-white flex items-center justify-center shadow-md">
+                    <span class="text-[9px] text-white font-black">审</span>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-xl pulse-ring" style="animation-delay:0.5s">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-blue-600 border-2 border-white flex items-center justify-center shadow-md">
+                    <span class="text-[9px] text-white font-black">法</span>
+                </div>
+            </div>
+            <div class="relative">
+                <div class="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-xl pulse-ring" style="animation-delay:1s">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <div class="absolute -bottom-1 -right-1 w-6 h-6 rounded-lg bg-amber-600 border-2 border-white flex items-center justify-center shadow-md">
+                    <span class="text-[9px] text-white font-black">市</span>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="text-lg font-bold text-gray-800 mb-1" id="loading-title">正在召集三方会诊</h2>
+        <p class="text-sm text-gray-400" id="loading-text">审计员正在审阅你的材料</p>
+        
+        <div class="mt-10 w-60 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
+            <div id="progress-bar" class="h-full rounded-full transition-all duration-700" style="width: 5%; background: #059669;"></div>
+        </div>
+        <p class="text-xs text-gray-400 mt-3 font-medium" id="loading-step">1/6 审计员分析中</p>
+    </div>
+</div>
+
+<!-- ====== 结果页 ====== -->
+<div id="page-result" class="hidden min-h-screen pb-28" style="background: #f0f4f8;">
+    <div class="hero-bg text-white px-5 pt-12 pb-8 sticky top-0 z-30">
+        <button onclick="goHome()" class="text-white/50 text-sm mb-3 flex items-center gap-1.5 hover:text-white transition font-medium">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            返回首页
+        </button>
+        <div class="flex items-center gap-2 mb-1">
+            <div class="w-1.5 h-5 bg-green-400 rounded-full"></div>
+            <h2 class="text-lg font-bold">会诊结果</h2>
+        </div>
+        <p class="text-white/50 text-sm mt-1 line-clamp-2 safe-text" id="result-question"></p>
+    </div>
+    
+    <div class="px-4 -mt-3" id="result-container"></div>
+    
+    <!-- 底部操作栏 -->
+    <div class="bottom-bar">
+        <button onclick="copyResult()" 
+            class="btn-secondary flex-1 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <span>复制结果</span>
+        </button>
+        <button onclick="showShareModal()" 
+            class="btn-primary flex-1 text-sm" style="box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>分享卡片</span>
+        </button>
+    </div>
+</div>
+
+<!-- ====== 分享弹窗 ====== -->
+<div id="share-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeShareModal()">
+    <div class="share-card" id="share-card-element">
+        <div class="hero-bg text-white p-6 relative">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div>
+                    <h2 class="text-base font-black">合规透镜</h2>
+                    <p class="text-white/50 text-[10px] font-medium tracking-wider">COMPLIANCE LENS</p>
+                </div>
+            </div>
+            <p class="text-white/50 text-xs">EU电池法 · 三方会诊报告</p>
+        </div>
+        <div class="p-5">
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">合规困惑</p>
+            <p class="text-sm font-bold text-gray-800 mb-4 leading-snug safe-text" id="share-question">...</p>
+            
+            <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="bg-red-50 rounded-xl p-3 text-center border border-red-100">
+                    <div class="w-8 h-8 rounded-lg bg-red-100 mx-auto mb-1.5 flex items-center justify-center">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="text-[10px] text-red-600 font-bold">审计员</div>
+                    <div class="text-xs font-black mt-0.5" id="share-risk-audit" style="color:#dc2626">🔴</div>
+                </div>
+                <div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
+                    <div class="w-8 h-8 rounded-lg bg-blue-100 mx-auto mb-1.5 flex items-center justify-center">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div class="text-[10px] text-blue-600 font-bold">法规顾问</div>
+                    <div class="text-xs font-black mt-0.5" id="share-risk-legal" style="color:#2563eb">🟡</div>
+                </div>
+                <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
+                    <div class="w-8 h-8 rounded-lg bg-amber-100 mx-auto mb-1.5 flex items-center justify-center">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                    </div>
+                    <div class="text-[10px] text-amber-600 font-bold">下游客户</div>
+                    <div class="text-xs font-black mt-0.5" id="share-risk-market" style="color:#d97706">🔴</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl p-3.5 mb-4 border border-gray-100">
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">核心决策路径</p>
+                <p class="text-xs text-gray-700 font-bold leading-relaxed safe-text" id="share-path">未生成决策路径</p>
+            </div>
+            
+            <div class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                <p class="text-[10px] text-gray-300 font-medium">电池出海合规Lab 出品</p>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-8 left-0 right-0 flex justify-center">
+        <button onclick="downloadShareCard()" 
+            class="bg-white text-gray-800 font-bold py-3 px-8 rounded-full shadow-2xl text-sm flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            保存图片
+        </button>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+// ====== 配置 ======
+const API_KEY = 'sk-fced7a8010be4d89afb224a046335b9c';
+const API_URL = 'https://api.deepseek.com/chat/completions';
+let currentQuestion = '';
+let currentResult = {};
+let isLoading = false;
+
+// ====== 安全工具函数 ======
+function escapeHtml(str) {
+    if (!str || typeof str !== 'string') return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return str.replace(/[&<>"']/g, c => map[c]);
+}
+
+// ====== DEMO 数据 ======
+const DEMO_DATA = {
+    auditor: {
+        statement: "Annex II §4.1 要求阳极/阴极必须用 Primary Data。白话翻译：你不能拿行业平均值充数，审核员会要原始电耗单。",
+        action: "立即发函供应商，限定10个工作日内提供数据",
+        risk: "🔴",
+        deadline: "今天"
+    },
+    legal: {
+        statement: "审计员说得太死。附件II第4.2条允许数据不可得时申请12个月缓冲期。白话翻译：先算可以，但必须书面说明并限期补齐。",
+        action: "起草'数据不可得声明'，本周内提交备案",
+        risk: "🟡",
+        deadline: "本周"
+    },
+    market: {
+        statement: "欧洲大客户已发质询函，要求本月内提供工厂级数据，否则取消订单。白话翻译：客户只认你家数据，没有就丢单。",
+        action: "将客户质询函转发供应商，抄送采购部施压",
+        risk: "🔴",
+        deadline: "今天"
+    },
+    calculator: {
+        irrelevant: "三方在'立法意图 vs 条文字面'上的争论不影响实际操作",
+        key_conflict: "你能不能3个月内拿到供应商的工厂级数据？",
+        paths: [
+            { condition: "供应商能在3个月内提供数据", action: "用P95行业值先算，同步催供应商", risk: "🟡", deadline: "本周" },
+            { condition: "供应商无法提供数据", action: "立即启动备选供应商评估", risk: "🔴", deadline: "今天" }
+        ],
+        missing_data: ["供应商承诺时间表", "客户Deadline", "备选供应商清单"]
+    },
+    moderator: "分歧：行业平均能否作为过渡期使用？卡在无法判断你是'应付备案'还是'交付客户'。",
+    deep_dive: {
+        step1: "发邮件给供应商质量总监，附客户质询函，要求3个工作日内回复数据时间表",
+        step2: "启动备选供应商评估，同步向欧盟机构提交'数据不可得声明'",
+        step3: "将'工厂级数据提供'写入采购合同条款",
+        question: "你这次计算是为了'法规备案'还是'交付客户'？如果是后者，你已处于违约边缘。"
+    }
+};
+
+// ====== 导航 ======
+function setQuestion(q) {
+    document.getElementById('user-question').value = q;
+}
+
+function setQuestionAndGo(q) {
+    localStorage.setItem('follow_up', JSON.stringify({
+        prevQuestion: currentQuestion,
+        prevResult: currentResult,
+        followUpQuestion: q
+    }));
+    showFollowUpInput(q);
+}
+
+function showFollowUpInput(defaultQuestion) {
+    if (document.getElementById('follow-up-card')) return;
+    const container = document.getElementById('result-container');
+    const card = document.createElement('div');
+    card.id = 'follow-up-card';
+    card.className = 'follow-up-card mb-3 slide-up';
+    card.innerHTML = `
+        <div class="flex items-center gap-2 mb-3">
+            <div class="w-6 h-6 rounded-lg bg-green-500 flex items-center justify-center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <p class="text-xs font-bold text-green-700">继续追问</p>
+        </div>
+        <textarea id="follow-up-input" rows="2" 
+            class="input-field border-green-300 bg-white focus:border-green-500 focus:shadow-green-100">${escapeHtml(defaultQuestion)}</textarea>
+        <button id="btn-follow-up" onclick="submitFollowUp()" 
+            class="btn-primary w-full mt-3 text-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>发送追问</span>
+        </button>
+    `;
+    container.appendChild(card);
+    setTimeout(() => {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('follow-up-input').focus();
+    }, 100);
+}
+
+async function submitFollowUp() {
+    const input = document.getElementById('follow-up-input');
+    const question = input ? input.value.trim() : '';
+    if (!question) { showToast('请输入追问内容'); return; }
+    const card = document.getElementById('follow-up-card');
+    if (card) card.remove();
+    await startDebate(false, true);
+}
+
+function goHome() {
+    hideAll();
+    document.getElementById('page-home').classList.remove('hidden');
+    document.getElementById('user-question').value = '';
+}
+
+function hideAll() {
+    ['page-home', 'page-loading', 'page-result'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+    });
+}
+
+// ====== 核心流程 ======
+async function startDebate(isDemo = false, isFollowUp = false) {
+    if (isLoading) { showToast('正在处理中，请稍候'); return; }
+    
+    let question;
+    if (isFollowUp) {
+        const input = document.getElementById('follow-up-input');
+        question = input ? input.value.trim() : '';
+    } else {
+        question = document.getElementById('user-question').value.trim();
+    }
+    if (!question) { showToast('请输入你的合规困惑'); return; }
+    
+    currentQuestion = question;
+    isLoading = true;
+    showLoading();
+    
+    const followUpRaw = localStorage.getItem('follow_up');
+    const followUp = followUpRaw ? JSON.parse(followUpRaw) : null;
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+        if (isDemo) {
+            await simulateLoading();
+            currentResult = DEMO_DATA;
+            localStorage.removeItem('follow_up');
+            showResult();
+            return;
+        }
+        
+        const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
+        
+        if (followUp) {
+            messages.push({
+                role: 'user',
+                content: `上一轮会诊问题："${followUp.prevQuestion}"\n上一轮会诊结论：\n审计员：${followUp.prevResult.auditor?.statement || ''}\n法规顾问：${followUp.prevResult.legal?.statement || ''}\n下游客户：${followUp.prevResult.market?.statement || ''}\n决策路径：${followUp.prevResult.calculator?.paths?.map(p => p.condition + '→' + p.action).join('; ') || ''}`
+            });
+            messages.push({
+                role: 'assistant',
+                content: JSON.stringify(followUp.prevResult)
+            });
+        }
+        
+        messages.push({
+            role: 'user',
+            content: followUp
+                ? `【追问】基于上文，用户进一步问："${question}"\n\n请继续按JSON Schema输出完整会诊结果，必须基于前文上下文进行分析，不要重复已讨论过的内容。`
+                : `用户问题："${question}"\n\n请严格按JSON Schema输出完整会诊结果，不要包含任何额外文字。`
+        });
+        
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + API_KEY
+            },
+            body: JSON.stringify({
+                model: 'deepseek-chat',
+                messages: messages,
+                temperature: 0.3,
+                response_format: { type: 'json_object' }
+            }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`API错误 (${response.status})`);
+        
+        const data = await response.json();
+        currentResult = parseResponse(data.choices[0].message.content);
+        localStorage.removeItem('follow_up');
+        showResult();
+        
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.error('API调用失败:', err);
+        localStorage.removeItem('follow_up');
+        
+        if (err.name === 'AbortError') {
+            showToast('请求超时，已切换至演示模式');
+        } else {
+            showToast('系统暂时繁忙，已切换至演示模式');
+        }
+        
+        await simulateLoading();
+        currentResult = DEMO_DATA;
+        showResult();
+        
+    } finally {
+        isLoading = false;
+    }
+}
+
+function simulateLoading() {
+    return new Promise(resolve => {
+        const steps = [
+            { text: '审计员正在审阅你的材料...', progress: 15, step: '1/6 审计员分析中' },
+            { text: '法规顾问正在检索政策空间...', progress: 35, step: '2/6 法规顾问分析中' },
+            { text: '下游客户正在评估市场影响...', progress: 55, step: '3/6 市场视角分析中' },
+            { text: '合规计算师正在生成决策路径...', progress: 75, step: '4/6 计算路径生成中' },
+            { text: '主持人正在总结分歧焦点...', progress: 90, step: '5/6 主持人总结中' },
+            { text: '正在拆解执行卡点...', progress: 100, step: '6/6 完成' }
+        ];
+        let i = 0;
+        const interval = setInterval(() => {
+            if (i >= steps.length) { clearInterval(interval); resolve(); return; }
+            updateLoading(steps[i].text, steps[i].progress, steps[i].step);
+            i++;
+        }, 600);
+    });
+}
+
+function showLoading() {
+    hideAll();
+    document.getElementById('page-loading').classList.remove('hidden');
+    document.getElementById('progress-bar').style.width = '5%';
+}
+
+function updateLoading(text, progress, step) {
+    document.getElementById('loading-text').textContent = text;
+    document.getElementById('progress-bar').style.width = progress + '%';
+    document.getElementById('loading-step').textContent = step;
+}
+
+function parseResponse(text) {
+    try { return JSON.parse(text); }
+    catch (e) {
+        const match = text.match(/```json\s*([\s\S]*?)\s*```/);
+        if (match) {
+            try { return JSON.parse(match[1]); }
+            catch (e2) {}
+        }
+        try {
+            const cleaned = text.replace(/^```[\s\S]*?\n/, '').replace(/\n```$/, '').trim();
+            if (cleaned) return JSON.parse(cleaned);
+        } catch (e3) {}
+        throw new Error('模型输出无法解析为JSON');
+    }
+}
+
+// ====== 渲染结果 ======
+function showResult() {
+    hideAll();
+    document.getElementById('page-result').classList.remove('hidden');
+    document.getElementById('result-question').textContent = currentQuestion;
+    
+    const container = document.getElementById('result-container');
+    container.innerHTML = '';
+    
+    // 1. 关键摘要
+    if (currentResult.calculator) {
+        const calc = currentResult.calculator;
+        container.innerHTML += `
+            <div class="card p-4 mb-3 slide-up">
+                <div class="flex items-start gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5 border border-green-100">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-[11px] text-green-600 font-bold uppercase tracking-wider mb-1">关键决策点</p>
+                        <p class="text-sm font-bold text-gray-800 leading-snug safe-text">${escapeHtml(calc.key_conflict || '')}</p>
+                        ${calc.irrelevant ? `<p class="text-[11px] text-gray-400 mt-2">🗑️ 可忽略：${escapeHtml(calc.irrelevant)}</p>` : ''}
+                    </div>
+                </div>
+            </div>`;
+    }
+    
+    // 2. 立场轴
+    container.innerHTML += `
+        <div class="card p-4 mb-3 slide-up">
+            <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">三方立场分布</p>
+            <div class="position-track mb-3">
+                <div class="position-marker avatar-auditor" style="left: 10%"></div>
+                <div class="position-marker avatar-legal" style="left: 50%"></div>
+                <div class="position-marker avatar-market" style="left: 85%"></div>
+            </div>
+            <div class="flex justify-between text-[10px]">
+                <span class="text-red-500 font-bold">审计员<br><span class="text-gray-400 font-normal">保守/稳</span></span>
+                <span class="text-blue-500 font-bold text-center">法规顾问<br><span class="text-gray-400 font-normal">平衡</span></span>
+                <span class="text-amber-600 font-bold text-right">下游客户<br><span class="text-gray-400 font-normal">激进/快</span></span>
+            </div>
+        </div>`;
+    
+    // 3. 三方角色
+    if (currentResult.auditor) container.innerHTML += renderRoleCard('auditor', '审', '第三方审计员', 'TÜV/SGS 视角', currentResult.auditor);
+    if (currentResult.legal) container.innerHTML += renderRoleCard('legal', '法', '法规政策顾问', 'DG GROW / JRC 视角', currentResult.legal);
+    if (currentResult.market) container.innerHTML += renderRoleCard('market', '市', '下游客户', '出口/OEM 视角', currentResult.market);
+    
+    // 4. 计算师路径
+    if (currentResult.calculator?.paths) {
+        const calc = currentResult.calculator;
+        container.innerHTML += `
+            <div class="card p-5 mb-3 slide-up">
+                <div class="flex items-center gap-2.5 mb-4">
+                    <div class="avatar avatar-calc" style="width:36px;height:36px;font-size:14px;">算</div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm">合规计算师</h3>
+                        <p class="text-[10px] text-gray-400 font-medium">决策路径生成</p>
+                    </div>
+                </div>
+                <div class="space-y-2.5">
+                    ${calc.paths.map((path, i) => {
+                        const riskClass = path.risk === '🔴' ? 'badge-red' : path.risk === '🟡' ? 'badge-yellow' : 'badge-green';
+                        const urgency = path.risk === '🔴' ? '48h内' : path.risk === '🟡' ? '5天内' : '可独立';
+                        return `
+                            <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md font-bold">路径${i+1}</span>
+                                    <span class="${riskClass}">${path.risk} ${urgency}</span>
+                                </div>
+                                <p class="text-sm text-gray-800 safe-text">如果 <span class="font-bold">${escapeHtml(path.condition)}</span></p>
+                                <p class="text-sm text-gray-800 mt-1 safe-text">那么 <span class="font-bold">${escapeHtml(path.action)}</span></p>
+                            </div>`;
+                    }).join('')}
+                </div>
+                ${calc.missing_data?.length ? `
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <p class="text-[11px] text-gray-400 font-bold mb-2">💡 完善决策还需要：</p>
+                        <div class="flex flex-wrap gap-2">
+                            ${calc.missing_data.map(d => `<span class="bg-gray-100 text-xs px-2.5 py-1 rounded-lg text-gray-600 border border-gray-200 font-medium">${escapeHtml(d)}</span>`).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>`;
+    }
+    
+    // 5. 主持人
+    if (currentResult.moderator) {
+        container.innerHTML += `
+            <div class="card p-5 mb-3 slide-up" style="background: #f8fafc; border-color: #e2e8f0;">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-7 h-7 rounded-lg bg-navy-light flex items-center justify-center">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm">主持人</h3>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed safe-text font-medium">${escapeHtml(currentResult.moderator)}</p>
+            </div>`;
+    }
+    
+    // 6. 卡点攻坚 + 追问
+    if (currentResult.deep_dive) {
+        const dd = currentResult.deep_dive;
+        const step1 = escapeHtml(dd.step1 || '');
+        const step2 = escapeHtml(dd.step2 || '');
+        const step3 = escapeHtml(dd.step3 || '');
+        const question = dd.question || '';
+        
+        let html = `
+            <div class="card p-5 mb-3 slide-up">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center border border-green-200">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    </div>
+                    <h3 class="font-bold text-gray-800 text-sm">卡点攻坚</h3>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex gap-3">
+                        <div class="timeline-dot bg-red-500">1</div>
+                        <div class="flex-1">
+                            <span class="text-[10px] text-red-500 font-bold uppercase tracking-wider">今天</span>
+                            <p class="text-sm text-gray-800 mt-0.5 safe-text">${step1}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="timeline-dot bg-amber-500">2</div>
+                        <div class="flex-1">
+                            <span class="text-[10px] text-amber-600 font-bold uppercase tracking-wider">本周</span>
+                            <p class="text-sm text-gray-800 mt-0.5 safe-text">${step2}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="timeline-dot bg-green-500">3</div>
+                        <div class="flex-1">
+                            <span class="text-[10px] text-green-600 font-bold uppercase tracking-wider">长期</span>
+                            <p class="text-sm text-gray-800 mt-0.5 safe-text">${step3}</p>
+                        </div>
+                    </div>
+                </div>`;
+        
+        if (question) {
+            const safeQ = escapeHtml(question);
+            html += `
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <div class="flex items-center gap-1.5 mb-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <p class="text-xs text-gray-400 font-bold">追问</p>
+                    </div>
+                    <p class="text-sm text-gray-700 mb-3 safe-text">${safeQ}</p>
+                    <button id="btn-continue-follow" 
+                        class="btn-primary w-full text-sm" style="padding:10px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                        <span>继续追问</span>
+                    </button>
+                </div>`;
+        }
+        
+        html += `</div>`;
+        container.innerHTML += html;
+        
+        if (question) {
+            const btn = document.getElementById('btn-continue-follow');
+            if (btn) {
+                btn.addEventListener('click', () => setQuestionAndGo(question));
+            }
+        }
+    }
+}
+
+function renderRoleCard(type, avatar, title, subtitle, data) {
+    const avatarClass = type === 'auditor' ? 'avatar-auditor' : type === 'legal' ? 'avatar-legal' : 'avatar-market';
+    const riskClass = data.risk === '🔴' ? 'badge-red' : data.risk === '🟡' ? 'badge-yellow' : 'badge-green';
+    const urgency = data.risk === '🔴' ? '48小时内' : data.risk === '🟡' ? '5个工作日内' : '可独立完成';
+    const statement = escapeHtml(data.statement || '');
+    const action = data.action ? escapeHtml(data.action) : '';
+    
+    return `
+        <div class="card p-5 mb-3 slide-up">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="avatar ${avatarClass}">${avatar}</div>
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm">${title}</h3>
+                    <p class="text-[10px] text-gray-400 font-medium">${subtitle}</p>
+                </div>
+            </div>
+            <div class="text-sm text-gray-600 leading-relaxed safe-text">${formatText(statement)}</div>
+            ${action ? `<p class="text-sm mt-2 font-bold" style="color:#059669;">→ ${action}</p>` : ''}
+            <div class="mt-3">
+                <span class="${riskClass}">${data.risk} ${urgency}</span>
+            </div>
+        </div>`;
+}
+
+function formatText(text) {
+    if (!text) return '';
+    return text
+        .replace(/白话翻译：/g, '<span class="font-bold" style="color:#059669;">白话翻译：</span>')
+        .replace(/【基于趋势推测】/g, '<span class="text-amber-500 text-xs font-bold">【基于趋势推测】</span>')
+        .replace(/【待核实】/g, '<span class="text-red-500 text-xs font-bold">【待核实】</span>');
+}
+
+// ====== 分享功能 ======
+function showShareModal() {
+    document.getElementById('share-question').textContent = currentQuestion;
+    if (currentResult.auditor) document.getElementById('share-risk-audit').textContent = currentResult.auditor.risk;
+    if (currentResult.legal) document.getElementById('share-risk-legal').textContent = currentResult.legal.risk;
+    if (currentResult.market) document.getElementById('share-risk-market').textContent = currentResult.market.risk;
+    
+    const pathEl = document.getElementById('share-path');
+    if (currentResult.calculator?.paths?.[0]) {
+        const p = currentResult.calculator.paths[0];
+        pathEl.textContent = `如果${p.condition}，那么${p.action}`;
+    } else {
+        pathEl.textContent = '未生成决策路径';
+    }
+    
+    document.getElementById('share-modal').classList.remove('hidden');
+}
+
+function closeShareModal() {
+    document.getElementById('share-modal').classList.add('hidden');
+}
+
+async function downloadShareCard() {
+    const element = document.getElementById('share-card-element');
+    try {
+        const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+        const link = document.createElement('a');
+        link.download = '合规透镜-会诊报告.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('图片已保存');
+    } catch (e) {
+        showToast('保存失败，请截图');
+    }
+}
+
+function copyResult() {
+    const text = generateCopyText();
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => showToast('已复制到剪贴板')).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+        document.execCommand('copy');
+        showToast('已复制到剪贴板');
+    } catch (err) {
+        showToast('复制失败，请手动复制');
+    }
+    document.body.removeChild(textarea);
+}
+
+function generateCopyText() {
+    let text = `【合规透镜 · 三方会诊报告】\n\n困惑：${currentQuestion}\n\n`;
+    if (currentResult.auditor) text += `👤 审计员：${currentResult.auditor.statement}\n→ ${currentResult.auditor.action} [${currentResult.auditor.risk}]\n\n`;
+    if (currentResult.legal) text += `👤 法规顾问：${currentResult.legal.statement}\n→ ${currentResult.legal.action} [${currentResult.legal.risk}]\n\n`;
+    if (currentResult.market) text += `👤 下游客户：${currentResult.market.statement}\n→ ${currentResult.market.action} [${currentResult.market.risk}]\n\n`;
+    if (currentResult.calculator?.paths) {
+        text += `📊 决策路径：\n`;
+        currentResult.calculator.paths.forEach((p, i) => {
+            text += `${i+1}. 如果${p.condition}，那么${p.action} [${p.risk}]\n`;
+        });
+    }
+    text += `\n⚡ 卡点攻坚：\n今天：${currentResult.deep_dive?.step1 || ''}\n本周：${currentResult.deep_dive?.step2 || ''}\n长期：${currentResult.deep_dive?.step3 || ''}`;
+    return text;
+}
+
+function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ====== System Prompt ======
+const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎，专门处理 EU 2023/1542 电池碳足迹合规问题。
+
+【核心任务】
+用户输入一个真实合规困惑，你必须同时扮演 6 个角色，并输出一个严格符合以下 JSON Schema 的响应对象。
+
+【全局规则（所有角色必须遵守）】
+1. 术语双轨制：涉及强制性义务、计算方法、时间节点时，先给精确法规编号（如 Art. 7(3)、Annex II §4.1），然后紧跟"白话翻译："用通俗语言解释。
+2. 事实红线（绝对不得违反）：
+   - 碳抵消（绿证、植树造林、CCER等）绝对不得计入电池碳足迹声明值，只能作为企业运营减碳的额外信息。
+   - 使用阶段（Use Phase）明确排除在系统边界之外，绝对不得建议计入。
+   - 阳极、阴极、电解液、隔膜、电芯外壳必须用公司特定数据（Primary Data），严禁用行业默认值（Secondary Data）作为声明值。
+   - 不得编造未生效授权法案的具体阈值数字；若涉及推测，必须加【基于趋势推测】前缀。
+3. 角色之间必须有真实的观点冲突：每个角色在发言时，必须明确反驳或质疑前一个角色的某个具体论点（"表面同意实则补充"不算冲突）。
+4. 每部分字数控制：statement/action 各不超过 80 字；其他字段不超过 50 字。
+5. 风险标签和时效必须明确：
+   - 🟢 = 低风险，可独立完成
+   - 🟡 = 中风险，需外部配合（建议 5 个工作日内启动）
+   - 🔴 = 高风险，存在否决项或重大财务影响（需 48 小时内决策）
+   - 时效选项：今天 / 本周 / 本月
+
+【输出 JSON Schema（必须完全遵循）】
+{
+  "auditor": {
+    "statement": "审计员的核心观点，含法规编号+白话翻译，并点出对上一个角色的反驳（80字内）",
+    "action": "给用户的具体下一步动作（30字内）",
+    "risk": "🟢/🟡/🔴",
+    "deadline": "今天/本周/本月"
+  },
+  "legal": {
+    "statement": "法规顾问观点，含立法意图或时间线，必须反驳审计员或市场视角（80字内）",
+    "action": "具体动作（30字内）",
+    "risk": "🟢/🟡/🔴",
+    "deadline": "今天/本周/本月"
+  },
+  "market": {
+    "statement": "下游客户/市场视角，结果导向，用商业案例或同行做法反驳前两者（80字内）",
+    "action": "具体动作（30字内）",
+    "risk": "🟢/🟡/🔴",
+    "deadline": "今天/本周/本月"
+  },
+  "calculator": {
+    "irrelevant": "一句总结三方争论中不影响实际操作的点（30字内）",
+    "key_conflict": "一句提炼影响决策的核心矛盾点（30字内）",
+    "paths": [
+      {
+        "condition": "如果 [条件A]",
+        "action": "那么 [执行操作A]",
+        "risk": "🟢/🟡/🔴",
+        "deadline": "今天/本周/本月"
+      },
+      {
+        "condition": "如果 [条件B]",
+        "action": "那么 [执行操作B]",
+        "risk": "🟢/🟡/🔴",
+        "deadline": "今天/本周/本月"
+      }
+    ],
+    "missing_data": ["需要用户补充的数据项1", "数据项2（最多3项）"]
+  },
+  "moderator": "一句话总结当前分歧焦点，并指明用户最可能的卡点（40字内）",
+  "deep_dive": {
+    "step1": "今天下班前可做的动作",
+    "step2": "本周内必须完成的决策",
+    "step3": "长期观察项",
+    "question": "基于 step1 对用户的精准追问"
+  }
+}
+
+【角色人格定义】
+- 审计员（TÜV/SGS）：死磕证据链，默认从严解释，爱问"依据在哪？"。天然反对任何"弹性空间"或"行业惯例"。
+- 法规顾问（政策追踪）：看立法 intent，给时间线，提醒缓冲期。天然反对"死守条文"的过度保守。
+- 市场视角（出口/OEM）：结果导向，抢订单，认为"先上车再迭代"比"完美数据"更现实。天然反对"等数据齐全再行动"的保守派。
+
+【输出要求】
+- 你必须只输出一个合法的 JSON 对象，不要包含任何 markdown 代码块、注释、或额外文字。
+- 所有字段必须填满，不得留空。
+- 如果你在 paths 中涉及推测性阈值，必须在 condition 或 action 中明确标注【基于趋势推测】。
+- 如果信息不足无法给出 paths，则在 paths 中只输出一条通用路径，并在 missing_data 中列出所需数据。`;
+</script>
+</body>
+</html>
