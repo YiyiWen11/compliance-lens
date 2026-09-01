@@ -11,7 +11,7 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-7YHXE1F7XG');
-    
+
     // 安全的事件追踪封装
     function trackEvent(eventName, params) {
         if (typeof gtag === 'function') {
@@ -211,6 +211,11 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
     box-shadow: 0 24px 64px rgba(0,0,0,0.3);
 }
 
+/* ===== 三方角色横向滚动 ===== */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 /* ===== Toast ===== */
 .toast {
     position: fixed;
@@ -285,69 +290,101 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             </svg>
         </div>
     </div>
-    
-    <div class="flex-1 px-5 py-6 -mt-6 relative z-10">
+
+    <!-- 次数提示栏 -->
+    <div id="quota-bar" class="px-5 pt-3 pb-1">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-400 font-medium">今日免费额度</span>
+                <div class="flex items-center gap-1" id="quota-dots">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                </div>
+                <span class="text-xs font-bold text-green-600" id="quota-text">5/5</span>
+            </div>
+            <span class="text-[10px] text-gray-300">每日0点重置</span>
+        </div>
+    </div>
+
+    <div class="flex-1 px-5 py-4 -mt-2 relative z-10">
         <div class="card-elevated p-5">
             <label class="text-sm font-bold text-gray-800 block mb-2">你的合规困惑</label>
             <p class="text-xs text-gray-400 mb-3">输入一个具体的EU电池法执行问题</p>
-            <textarea id="user-question" rows="3" 
+            <textarea id="user-question" rows="3"
                 class="input-field"
-                placeholder="例如：供应商只给了行业平均数据，没有工厂具体数据，能不能先用着？"></textarea>
-            
+                placeholder="例如:供应商只给了行业平均数据,没有工厂具体数据,能不能先用着?"></textarea>
+
+            <!-- 限额提示(条件渲染) -->
+            <div id="quota-hint" class="hidden mb-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div>
+                    <p class="text-xs font-bold text-amber-700">今日额度仅剩 <span id="quota-remaining-hint">2</span> 次</p>
+                    <p class="text-[10px] text-amber-500 mt-0.5">用完可明日再来,或后台留言获取体验额度</p>
+                </div>
+            </div>
+
             <button onclick="startDebate()" id="btn-start"
-                class="btn-primary w-full mt-4 text-sm">
+                class="btn-primary w-full text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <span>获取三方推演</span>
             </button>
         </div>
-        
+
         <div class="mt-6">
             <div class="flex items-center gap-2 mb-3">
                 <div class="w-1 h-4 bg-green-600 rounded-full"></div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">常见问题</p>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">热门推演</p>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
-                <button onclick="setQuestion('三年前的实测数据还能用吗？')" class="preset-card">
+                <button onclick="setQuestion('三年前的实测数据还能用吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">📅</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">三年前的数据还能用吗？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">三年前的数据还能用吗?</div>
                 </button>
-                <button onclick="setQuestion('工厂买了绿证和PPA，能用来降低电池碳足迹吗？')" class="preset-card">
+                <button onclick="setQuestion('工厂买了绿证和PPA,能用来降低电池碳足迹吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">🌱</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">绿证/PPA能降碳足迹吗？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">绿证/PPA能降碳足迹吗?</div>
                 </button>
-                <button onclick="setQuestion('我们在江苏和四川有两个工厂，能合并算平均值吗？')" class="preset-card">
+                <button onclick="setQuestion('我们在江苏和四川有两个工厂,能合并算平均值吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">🏭</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">多工厂数据能合并吗？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">多工厂数据能合并吗?</div>
                 </button>
-                <button onclick="setQuestion('正极材料供应商只给了行业平均LCA数据，能先用着吗？')" class="preset-card">
+                <button onclick="setQuestion('正极材料供应商只给了行业平均LCA数据,能先用着吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">📊</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">行业平均值能用吗？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">行业平均值能用吗?</div>
                 </button>
-                <button onclick="setQuestion('电池碳足迹应该算到“摇篮到大门”还是“摇篮到坟墓”？')" class="preset-card">
+                <button onclick="setQuestion('电池碳足迹应该算到"摇篮到大门"还是"摇篮到坟墓"?')" class="preset-card">
                     <div class="text-xl mb-1.5">⚰️</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">算到大门还是坟墓？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">算到大门还是坟墓?</div>
                 </button>
-                <button onclick="setQuestion('欧盟不认中国的排放因子数据库，我的数据会有偏差吗？该怎么解决？')" class="preset-card">
+                <button onclick="setQuestion('欧盟不认中国的排放因子数据库,我的数据会有偏差吗?该怎么解决?')" class="preset-card">
                     <div class="text-xl mb-1.5">🌍</div>
-                    <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库？</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库?</div>
+                </button>
+                <button onclick="setQuestion('国内碳足迹认证后,认证结果能和国际互认吗?')" class="preset-card">
+                    <div class="text-xl mb-1.5">🔄</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">国内认证能和国际互认吗?</div>
+                </button>
+                <button onclick="setQuestion('国内碳足迹申报和EU电池法,哪个先跑更划算?')" class="preset-card">
+                    <div class="text-xl mb-1.5">⏰</div>
+                    <div class="text-xs font-semibold text-gray-700 leading-snug">国内申报和EU合规,哪个先跑?</div>
                 </button>
             </div>
         </div>
-        
+
         <!-- 免责声明 -->
-        <div class="mt-6 mx-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
+        <div class="mt-4 mx-2 p-4 bg-gray-50 rounded-xl border border-gray-200">
             <div class="flex items-start gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <div>
                     <p class="text-[11px] font-bold text-gray-500 mb-1">免责声明</p>
-                    <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 模型生成建议，仅供参考，不构成法律意见或专业咨询。具体合规操作请咨询认证律师或专业机构。模型输出可能存在偏差，请以欧盟官方法规为准。</p>
+                    <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 模型生成建议,仅供参考,不构成法律意见或专业咨询。具体合规操作请咨询认证律师或专业机构。模型输出可能存在偏差,请以欧盟官方法规为准。</p>
                 </div>
             </div>
-            <div class="mt-2 pt-2 border-t border-gray-200">
-                <p class="text-[10px] text-gray-400">每日限量免费试用（5次/人）</p>
-            </div>
         </div>
-        
+
         <!-- 品牌标识 -->
         <div class="mt-8 mb-4 flex items-center justify-center gap-2 text-gray-400">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
@@ -385,10 +422,10 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                 </div>
             </div>
         </div>
-        
+
         <h2 class="text-lg font-bold text-gray-800 mb-1" id="loading-title">正在分析</h2>
         <p class="text-sm text-gray-400" id="loading-text">审计员正在审阅你的材料</p>
-        
+
         <div class="mt-10 w-60 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
             <div id="progress-bar" class="h-full rounded-full transition-all duration-700" style="width: 5%; background: #059669;"></div>
         </div>
@@ -409,25 +446,25 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         </div>
         <p class="text-white/50 text-sm mt-1 line-clamp-2 safe-text" id="result-question"></p>
     </div>
-    
+
     <div class="px-4 -mt-3" id="result-container"></div>
-    
+
     <!-- 结果页免责声明 -->
     <div class="px-4 mt-2 mb-4">
         <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 生成建议，仅供参考，不构成法律意见。具体合规操作请咨询专业机构。</p>
+            <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 生成建议,仅供参考,不构成法律意见。具体合规操作请咨询专业机构。</p>
         </div>
     </div>
-    
+
     <!-- 底部操作栏 -->
     <div class="bottom-bar">
-        <button onclick="copyResult()" 
+        <button onclick="copyResult()"
             class="btn-secondary flex-1 text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             <span>复制结果</span>
         </button>
-        <button onclick="showShareModal()" 
+        <button onclick="showShareModal()"
             class="btn-primary flex-1 text-sm" style="box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             <span>分享卡片</span>
@@ -453,7 +490,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         <div class="p-5">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">合规困惑</p>
             <p class="text-sm font-bold text-gray-800 mb-4 leading-snug safe-text" id="share-question">...</p>
-            
+
             <div class="grid grid-cols-3 gap-2 mb-4">
                 <div class="bg-red-50 rounded-xl p-3 text-center border border-red-100">
                     <div class="w-8 h-8 rounded-lg bg-red-100 mx-auto mb-1.5 flex items-center justify-center">
@@ -477,12 +514,12 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                     <div class="text-xs font-black mt-0.5" id="share-risk-market" style="color:#d97706">🔴</div>
                 </div>
             </div>
-            
+
             <div class="bg-gray-50 rounded-xl p-3.5 mb-4 border border-gray-100">
                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">核心决策路径</p>
                 <p class="text-xs text-gray-700 font-bold leading-relaxed safe-text" id="share-path">未生成决策路径</p>
             </div>
-            
+
             <div class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                 <p class="text-[10px] text-gray-300 font-medium">电池出海合规Lab 出品</p>
@@ -490,11 +527,39 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         </div>
     </div>
     <div class="absolute bottom-8 left-0 right-0 flex justify-center">
-        <button onclick="downloadShareCard()" 
+        <button onclick="downloadShareCard()"
             class="bg-white text-gray-800 font-bold py-3 px-8 rounded-full shadow-2xl text-sm flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             保存图片
         </button>
+    </div>
+</div>
+
+<!-- ====== 额度用完弹窗 ====== -->
+<div id="quota-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeQuotaModal()">
+    <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+        <div class="hero-bg p-6 text-white text-center relative">
+            <div class="w-16 h-16 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mx-auto mb-3">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3 class="text-lg font-bold">今日额度已用完</h3>
+            <p class="text-white/60 text-xs mt-1">每日0点自动重置(剩余 <span id="quota-countdown">--:--:--</span>)</p>
+        </div>
+        <div class="p-5">
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                    <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-sm font-bold text-gray-800">关注公众号</p>
+                        <p class="text-[11px] text-gray-400">后台留言"试用",人工开通体验额度</p>
+                    </div>
+                    <button onclick="copyWechatID()" class="px-3 py-1.5 bg-green-50 text-green-600 text-xs font-bold rounded-lg border border-green-200">复制</button>
+                </div>
+            </div>
+            <button onclick="closeQuotaModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl">知道了,明天再来</button>
+        </div>
     </div>
 </div>
 
@@ -519,38 +584,38 @@ function escapeHtml(str) {
 // ====== DEMO 数据 ======
 const DEMO_DATA = {
     auditor: {
-        statement: "Annex II §4.1 要求阳极/阴极必须用 Primary Data。白话翻译：你不能拿行业平均值充数，审核员会要原始电耗单。",
-        action: "立即发函供应商，限定10个工作日内提供数据",
+        statement: "Annex II §4.1 要求阳极/阴极必须用 Primary Data。白话翻译:你不能拿行业平均值充数,审核员会要原始电耗单。",
+        action: "立即发函供应商,限定10个工作日内提供数据",
         risk: "🔴",
         deadline: "今天"
     },
     legal: {
-        statement: "审计员说得太死。附件II第4.2条允许数据不可得时申请12个月缓冲期。白话翻译：先算可以，但必须书面说明并限期补齐。",
-        action: "起草'数据不可得声明'，本周内提交备案",
+        statement: "审计员说得太死。附件II第4.2条允许数据不可得时申请12个月缓冲期。白话翻译:先算可以,但必须书面说明并限期补齐。",
+        action: "起草'数据不可得声明',本周内提交备案",
         risk: "🟡",
         deadline: "本周"
     },
     market: {
-        statement: "欧洲大客户已发质询函，要求本月内提供工厂级数据，否则取消订单。白话翻译：客户只认你家数据，没有就丢单。",
-        action: "将客户质询函转发供应商，抄送采购部施压",
+        statement: "欧洲大客户已发质询函,要求本月内提供工厂级数据,否则取消订单。白话翻译:客户只认你家数据,没有就丢单。",
+        action: "将客户质询函转发供应商,抄送采购部施压",
         risk: "🔴",
         deadline: "今天"
     },
     calculator: {
         irrelevant: "三方在'立法意图 vs 条文字面'上的争论不影响实际操作",
-        key_conflict: "你能不能3个月内拿到供应商的工厂级数据？",
+        key_conflict: "你能不能3个月内拿到供应商的工厂级数据?",
         paths: [
-            { condition: "供应商能在3个月内提供数据", action: "用P95行业值先算，同步催供应商", risk: "🟡", deadline: "本周" },
+            { condition: "供应商能在3个月内提供数据", action: "用P95行业值先算,同步催供应商", risk: "🟡", deadline: "本周" },
             { condition: "供应商无法提供数据", action: "立即启动备选供应商评估", risk: "🔴", deadline: "今天" }
         ],
         missing_data: ["供应商承诺时间表", "客户Deadline", "备选供应商清单"]
     },
-    moderator: "分歧：行业平均能否作为过渡期使用？卡在无法判断你是'应付备案'还是'交付客户'。",
+    moderator: "分歧:行业平均能否作为过渡期使用?卡在无法判断你是'应付备案'还是'交付客户'。",
     deep_dive: {
-        step1: "发邮件给供应商质量总监，附客户质询函，要求3个工作日内回复数据时间表",
-        step2: "启动备选供应商评估，同步向欧盟机构提交'数据不可得声明'",
+        step1: "发邮件给供应商质量总监,附客户质询函,要求3个工作日内回复数据时间表",
+        step2: "启动备选供应商评估,同步向欧盟机构提交'数据不可得声明'",
         step3: "将'工厂级数据提供'写入采购合同条款",
-        question: "你这次计算是为了'法规备案'还是'交付客户'？如果是后者，你已处于违约边缘。"
+        question: "你这次计算是为了'法规备案'还是'交付客户'?如果是后者,你已处于违约边缘。"
     }
 };
 
@@ -561,55 +626,15 @@ function setQuestion(q) {
 }
 
 function setQuestionAndGo(q) {
-    localStorage.setItem('follow_up', JSON.stringify({
-        prevQuestion: currentQuestion,
-        prevResult: currentResult,
-        followUpQuestion: q
-    }));
-    showFollowUpInput(q);
-}
-
-function showFollowUpInput(defaultQuestion) {
-    if (document.getElementById('follow-up-card')) return;
-    const container = document.getElementById('result-container');
-    const card = document.createElement('div');
-    card.id = 'follow-up-card';
-    card.className = 'follow-up-card mb-3 slide-up';
-    card.innerHTML = `
-        <div class="flex items-center gap-2 mb-3">
-            <div class="w-6 h-6 rounded-lg bg-green-500 flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-            </div>
-            <p class="text-xs font-bold text-green-700">继续追问</p>
-        </div>
-        <textarea id="follow-up-input" rows="2" 
-            class="input-field border-green-300 bg-white focus:border-green-500 focus:shadow-green-100">${escapeHtml(defaultQuestion)}</textarea>
-        <button id="btn-follow-up" onclick="submitFollowUp()" 
-            class="btn-primary w-full mt-3 text-sm">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            <span>发送追问</span>
-        </button>
-    `;
-    container.appendChild(card);
-    setTimeout(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('follow-up-input').focus();
-    }, 100);
-}
-
-async function submitFollowUp() {
-    const input = document.getElementById('follow-up-input');
-    const question = input ? input.value.trim() : '';
-    if (!question) { showToast('请输入追问内容'); return; }
-    const card = document.getElementById('follow-up-card');
-    if (card) card.remove();
-    await startDebate(false, true, question);
+    setQuestion(q);
+    startDebate();
 }
 
 function goHome() {
     hideAll();
     document.getElementById('page-home').classList.remove('hidden');
     document.getElementById('user-question').value = '';
+    updateQuotaUI();
 }
 
 function hideAll() {
@@ -619,38 +644,167 @@ function hideAll() {
 }
 
 // ====== 限流工具 ======
-function checkDailyLimit() {
-    const MAX_DAILY = 5;
-    const today = new Date().toDateString();
-    const stored = JSON.parse(localStorage.getItem('usage_limit') || '{}');
-    
-    if (stored.date !== today) {
-        localStorage.setItem('usage_limit', JSON.stringify({ date: today, count: 1 }));
-        return { allowed: true, remaining: MAX_DAILY - 1 };
+const MAX_DAILY = 5;
+let userIP = null;
+
+function getDeviceID() {
+    let id = localStorage.getItem('cl_device_id');
+    if (!id) {
+        id = 'cl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('cl_device_id', id);
     }
-    
-    if (stored.count >= MAX_DAILY) {
-        return { allowed: false, remaining: 0 };
-    }
-    
-    stored.count += 1;
-    localStorage.setItem('usage_limit', JSON.stringify(stored));
-    return { allowed: true, remaining: MAX_DAILY - stored.count };
+    return id;
 }
+
+async function getUserIP() {
+    if (userIP) return userIP;
+    try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 2000);
+        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+        const data = await res.json();
+        userIP = data.ip;
+        return userIP;
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
+function getQuotaStatus() {
+    const today = new Date().toDateString();
+    const deviceID = getDeviceID();
+    const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+
+    if (stored.date !== today) {
+        const fresh = { date: today, deviceID: deviceID, ip: userIP || 'unknown', count: 0 };
+        localStorage.setItem('cl_usage', JSON.stringify(fresh));
+        return { remaining: MAX_DAILY, used: 0, isNewDay: true };
+    }
+
+    if (stored.deviceID !== deviceID) {
+        stored.deviceID = deviceID;
+        localStorage.setItem('cl_usage', JSON.stringify(stored));
+    }
+
+    const used = stored.count || 0;
+    return { remaining: Math.max(0, MAX_DAILY - used), used: used, isNewDay: false };
+}
+
+function consumeQuota() {
+    const today = new Date().toDateString();
+    const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+
+    if (stored.date !== today) {
+        localStorage.setItem('cl_usage', JSON.stringify({
+            date: today,
+            deviceID: getDeviceID(),
+            ip: userIP || 'unknown',
+            count: 1
+        }));
+        return { remaining: MAX_DAILY - 1, used: 1 };
+    }
+
+    stored.count = (stored.count || 0) + 1;
+    localStorage.setItem('cl_usage', JSON.stringify(stored));
+    return { remaining: Math.max(0, MAX_DAILY - stored.count), used: stored.count };
+}
+
+function updateQuotaUI() {
+    const status = getQuotaStatus();
+    const dots = document.getElementById('quota-dots');
+    const text = document.getElementById('quota-text');
+    const hint = document.getElementById('quota-hint');
+    const hintNum = document.getElementById('quota-remaining-hint');
+
+    if (dots) {
+        dots.innerHTML = '';
+        for (let i = 0; i < MAX_DAILY; i++) {
+            const color = i < status.remaining ? 'bg-green-500' : 'bg-gray-200';
+            dots.innerHTML += `<span class="w-2 h-2 rounded-full ${color}"></span>`;
+        }
+    }
+
+    if (text) {
+        text.textContent = `${status.remaining}/${MAX_DAILY}`;
+        text.className = status.remaining === 0
+            ? 'text-xs font-bold text-red-500'
+            : status.remaining <= 2
+                ? 'text-xs font-bold text-amber-500'
+                : 'text-xs font-bold text-green-600';
+    }
+
+    if (hint && hintNum) {
+        if (status.remaining > 0 && status.remaining <= 2) {
+            hint.classList.remove('hidden');
+            hintNum.textContent = status.remaining;
+        } else {
+            hint.classList.add('hidden');
+        }
+    }
+
+    const btn = document.getElementById('btn-start');
+    if (btn) {
+        if (status.remaining === 0) {
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = '<span>今日额度已用完</span>';
+        } else {
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span>获取三方推演</span>`;
+        }
+    }
+}
+
+function showQuotaModal() {
+    document.getElementById('quota-modal').classList.remove('hidden');
+    updateCountdown();
+    if (!window.quotaTimer) {
+        window.quotaTimer = setInterval(updateCountdown, 1000);
+    }
+}
+
+function closeQuotaModal() {
+    document.getElementById('quota-modal').classList.add('hidden');
+    if (window.quotaTimer) {
+        clearInterval(window.quotaTimer);
+        window.quotaTimer = null;
+    }
+}
+
+function updateCountdown() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setHours(24, 0, 0, 0);
+    const diff = tomorrow - now;
+
+    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+
+    const el = document.getElementById('quota-countdown');
+    if (el) el.textContent = `${h}:${m}:${s}`;
+}
+
+function copyWechatID() {
+    const id = '电池出海合规Lab';
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(id).then(() => showToast('已复制公众号名称'));
+    } else {
+        showToast('请手动搜索:电池出海合规Lab');
+    }
+}
+
+// 初始化
+document.addEventListener('DOMContentLoaded', async () => {
+    // 清理旧版本遗留数据
+    localStorage.removeItem('usage_limit');
+    await getUserIP();
+    updateQuotaUI();
+});
 
 // ====== 核心流程 ======
 async function startDebate(isDemo = false, isFollowUp = false, questionOverride = null) {
-    if (isLoading) { showToast('正在处理中，请稍候'); return; }
-    
-    // 限流检查（Demo模式不限流）
-    if (!isDemo) {
-        const limit = checkDailyLimit();
-        if (!limit.allowed) {
-            showToast('今日试用次数已达上限（5/5），明日再来');
-            return;
-        }
-    }
-    
+    if (isLoading) { showToast('正在处理中,请稍候'); return; }
+
     let question;
     if (questionOverride) {
         question = questionOverride;
@@ -660,25 +814,41 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
     } else {
         question = document.getElementById('user-question').value.trim();
     }
-    if (!question) { showToast('请输入你的合规困惑'); return; }
-    
+
+    // 先检查输入
+    if (!question) {
+        showToast('请输入你的合规困惑');
+        return;
+    }
+
+    // 再检查额度
+    if (!isDemo) {
+        const status = getQuotaStatus();
+        if (status.remaining <= 0) {
+            showQuotaModal();
+            return;
+        }
+        consumeQuota();
+        updateQuotaUI();
+    }
+
     // 追踪用户提问
     trackEvent(isFollowUp ? 'follow_up' : 'start_consultation', {
         question_preview: question.substring(0, 50),
         is_follow_up: isFollowUp,
         is_demo: isDemo
     });
-    
+
     currentQuestion = question;
     isLoading = true;
     showLoading();
-    
+
     const followUpRaw = localStorage.getItem('follow_up');
     const followUp = followUpRaw ? JSON.parse(followUpRaw) : null;
-    
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
-    
+
     try {
         if (isDemo) {
             await simulateLoading();
@@ -687,27 +857,27 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
             showResult();
             return;
         }
-        
+
         const messages = [{ role: 'system', content: SYSTEM_PROMPT }];
-        
+
         if (followUp) {
             messages.push({
                 role: 'user',
-                content: `上一轮分析问题："${followUp.prevQuestion}"\n上一轮分析结论：\n审计员：${followUp.prevResult.auditor?.statement || ''}\n法规顾问：${followUp.prevResult.legal?.statement || ''}\n下游客户：${followUp.prevResult.market?.statement || ''}\n决策路径：${followUp.prevResult.calculator?.paths?.map(p => p.condition + '→' + p.action).join('; ') || ''}`
+                content: `上一轮分析问题:"${followUp.prevQuestion}"\n上一轮分析结论:\n审计员:${followUp.prevResult.auditor?.statement || ''}\n法规顾问:${followUp.prevResult.legal?.statement || ''}\n下游客户:${followUp.prevResult.market?.statement || ''}\n决策路径:${followUp.prevResult.calculator?.paths?.map(p => p.condition + '→' + p.action).join('; ') || ''}`
             });
             messages.push({
                 role: 'assistant',
                 content: JSON.stringify(followUp.prevResult)
             });
         }
-        
+
         messages.push({
             role: 'user',
             content: followUp
-                ? `【追问】基于上文，用户进一步问："${question}"\n\n请继续按JSON Schema输出完整分析结果，必须基于前文上下文进行分析，不要重复已讨论过的内容。`
-                : `用户问题："${question}"\n\n请严格按JSON Schema输出完整分析结果，不要包含任何额外文字。`
+                ? `【追问】基于上文,用户进一步问:"${question}"\n\n请继续按JSON Schema输出完整分析结果,必须基于前文上下文进行分析,不要重复已讨论过的内容。`
+                : `用户问题:"${question}"\n\n请严格按JSON Schema输出完整分析结果,以json格式返回,不要包含任何额外文字。`
         });
-        
+
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
@@ -722,36 +892,46 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
             }),
             signal: controller.signal
         });
-        
+
         clearTimeout(timeoutId);
-        
+
         if (!response.ok) throw new Error(`API错误 (${response.status})`);
-        
+
         const data = await response.json();
         currentResult = parseResponse(data.choices[0].message.content);
         localStorage.removeItem('follow_up');
         trackEvent('api_success', { question_preview: currentQuestion.substring(0, 30) });
         showResult();
-        
+
     } catch (err) {
         clearTimeout(timeoutId);
         console.error('API调用失败:', err);
         localStorage.removeItem('follow_up');
-        trackEvent('api_fail', { 
+        trackEvent('api_fail', {
             error_type: err.name === 'AbortError' ? 'timeout' : 'api_error',
             question_preview: currentQuestion.substring(0, 30)
         });
-        
-        if (err.name === 'AbortError') {
-            showToast('请求超时，已切换至演示模式');
-        } else {
-            showToast('系统暂时繁忙，已切换至演示模式');
+
+        // API失败时退还额度
+        if (!isDemo) {
+            const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+            if (stored.count > 0) {
+                stored.count -= 1;
+                localStorage.setItem('cl_usage', JSON.stringify(stored));
+                updateQuotaUI();
+            }
         }
-        
+
+        if (err.name === 'AbortError') {
+            showToast('请求超时,已切换至演示模式');
+        } else {
+            showToast('系统暂时繁忙,已切换至演示模式');
+        }
+
         await simulateLoading();
         currentResult = DEMO_DATA;
         showResult();
-        
+
     } finally {
         isLoading = false;
     }
@@ -809,10 +989,10 @@ function showResult() {
     hideAll();
     document.getElementById('page-result').classList.remove('hidden');
     document.getElementById('result-question').textContent = currentQuestion;
-    
+
     const container = document.getElementById('result-container');
     container.innerHTML = '';
-    
+
     // 1. 关键摘要
     if (currentResult.calculator) {
         const calc = currentResult.calculator;
@@ -825,14 +1005,17 @@ function showResult() {
                     <div class="flex-1">
                         <p class="text-[11px] text-green-600 font-bold uppercase tracking-wider mb-1">关键决策点</p>
                         <p class="text-sm font-bold text-gray-800 leading-snug safe-text">${escapeHtml(calc.key_conflict || '')}</p>
-                        ${calc.irrelevant ? `<p class="text-[11px] text-gray-400 mt-2">🗑️ 可忽略：${escapeHtml(calc.irrelevant)}</p>` : ''}
+                        ${calc.irrelevant ? `<p class="text-[11px] text-gray-400 mt-2">🗑️ 可忽略:${escapeHtml(calc.irrelevant)}</p>` : ''}
                     </div>
                 </div>
             </div>`;
     }
+
+    // 2. 详细分析区（浅灰背景包裹）
+    let detailHtml = '';
     
-    // 2. 立场轴
-    container.innerHTML += `
+    // 2.1 立场轴
+    detailHtml += `
         <div class="card p-4 mb-3 slide-up">
             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-3">三方立场分布</p>
             <div class="position-track mb-3">
@@ -846,32 +1029,54 @@ function showResult() {
                 <span class="text-amber-600 font-bold text-right">下游客户<br><span class="text-gray-400 font-normal">激进/快</span></span>
             </div>
         </div>`;
+
+    // 2.2 三方角色 - 水平平铺
+    let roleCardsHtml = '';
+    if (currentResult.auditor) roleCardsHtml += renderRoleCard('auditor', '审', '第三方审计员', 'TÜV/SGS', currentResult.auditor);
+    if (currentResult.legal) roleCardsHtml += renderRoleCard('legal', '法', '法规政策顾问', 'DG GROW', currentResult.legal);
+    if (currentResult.market) roleCardsHtml += renderRoleCard('market', '市', '下游客户', '出口/OEM', currentResult.market);
     
-    // 3. 三方角色
-    if (currentResult.auditor) container.innerHTML += renderRoleCard('auditor', '审', '第三方审计员', 'TÜV/SGS 视角', currentResult.auditor);
-    if (currentResult.legal) container.innerHTML += renderRoleCard('legal', '法', '法规政策顾问', 'DG GROW / JRC 视角', currentResult.legal);
-    if (currentResult.market) container.innerHTML += renderRoleCard('market', '市', '下游客户', '出口/OEM 视角', currentResult.market);
+    if (roleCardsHtml) {
+        detailHtml += `
+            <div class="mb-3 slide-up">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-1 h-4 bg-gray-300 rounded-full"></div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">三方立场</p>
+                </div>
+                <div class="flex gap-2 w-full">
+                    ${roleCardsHtml}
+                </div>
+            </div>`;
+    }
     
-    // 4. 计算师路径
+    if (detailHtml) {
+        container.innerHTML += `
+            <div class="mb-3 slide-up" style="background:#f8fafc; border-radius:16px; padding:16px;">
+                <div class="flex items-center gap-2 mb-3">
+                    <div class="w-1 h-4 bg-gray-400 rounded-full"></div>
+                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">详细分析</p>
+                </div>
+                ${detailHtml}
+            </div>`;
+    }
+
+    // 4-6. 行动指南区（合并：下一步怎么做 + 卡点攻坚 + 战略建议）
+    let actionGuideHtml = '';
+    
+    // 4. 条件判断路径
     if (currentResult.calculator?.paths) {
         const calc = currentResult.calculator;
-        container.innerHTML += `
-            <div class="card p-5 mb-3 slide-up">
-                <div class="flex items-center gap-2.5 mb-4">
-                    <div class="avatar avatar-calc" style="width:36px;height:36px;font-size:14px;">算</div>
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-sm">合规计算师</h3>
-                        <p class="text-[10px] text-gray-400 font-medium">决策路径生成</p>
-                    </div>
-                </div>
+        actionGuideHtml += `
+            <div class="mb-4">
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-2.5">根据你的情况</p>
                 <div class="space-y-2.5">
                     ${calc.paths.map((path, i) => {
                         const riskClass = path.risk === '🔴' ? 'badge-red' : path.risk === '🟡' ? 'badge-yellow' : 'badge-green';
                         const urgency = path.risk === '🔴' ? '48h内' : path.risk === '🟡' ? '5天内' : '可独立';
                         return `
-                            <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-100">
+                            <div class="bg-white rounded-xl p-3.5 border border-gray-200">
                                 <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-md font-bold">路径${i+1}</span>
+                                    <span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-bold">路径${i+1}</span>
                                     <span class="${riskClass}">${path.risk} ${urgency}</span>
                                 </div>
                                 <p class="text-sm text-gray-800 safe-text">如果 <span class="font-bold">${escapeHtml(path.condition)}</span></p>
@@ -879,47 +1084,32 @@ function showResult() {
                             </div>`;
                     }).join('')}
                 </div>
-                ${calc.missing_data?.length ? `
-                    <div class="mt-4 pt-4 border-t border-gray-100">
-                        <p class="text-[11px] text-gray-400 font-bold mb-2">💡 完善决策还需要：</p>
-                        <div class="flex flex-wrap gap-2">
-                            ${calc.missing_data.map(d => `<span class="bg-gray-100 text-xs px-2.5 py-1 rounded-lg text-gray-600 border border-gray-200 font-medium">${escapeHtml(d)}</span>`).join('')}
-                        </div>
-                    </div>
-                ` : ''}
+                ${calc.missing_data?.length ? '' : ''}
             </div>`;
     }
-    
-    // 5. 主持人
-    if (currentResult.moderator) {
-        container.innerHTML += `
-            <div class="card p-5 mb-3 slide-up" style="background: #f8fafc; border-color: #e2e8f0;">
-                <div class="flex items-center gap-2 mb-2">
-                    <div class="w-7 h-7 rounded-lg bg-navy-light flex items-center justify-center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                    </div>
-                    <h3 class="font-bold text-gray-800 text-sm">主持人</h3>
-                </div>
-                <p class="text-sm text-gray-600 leading-relaxed safe-text font-medium">${escapeHtml(currentResult.moderator)}</p>
-            </div>`;
-    }
-    
-    // 6. 卡点攻坚 + 追问
+
+    // 6. 卡点攻坚时间线
     if (currentResult.deep_dive) {
         const dd = currentResult.deep_dive;
         const step1 = escapeHtml(dd.step1 || '');
         const step2 = escapeHtml(dd.step2 || '');
         const step3 = escapeHtml(dd.step3 || '');
-        const question = dd.question || '';
-        
-        let html = `
-            <div class="card p-5 mb-3 slide-up">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center border border-green-200">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        const moderatorText = currentResult.moderator ? escapeHtml(currentResult.moderator) : '';
+
+        if (moderatorText) {
+            actionGuideHtml += `
+                <div class="mb-4 p-3.5 rounded-xl bg-white border border-gray-200">
+                    <div class="flex items-center gap-1.5 mb-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">核心判断</span>
                     </div>
-                    <h3 class="font-bold text-gray-800 text-sm">卡点攻坚</h3>
-                </div>
+                    <p class="text-sm text-gray-700 leading-relaxed safe-text font-medium">${moderatorText}</p>
+                </div>`;
+        }
+        
+        actionGuideHtml += `
+            <div class="mb-4">
+                <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-2.5">行动时间线</p>
                 <div class="space-y-3">
                     <div class="flex gap-3">
                         <div class="timeline-dot bg-red-500">1</div>
@@ -942,57 +1132,227 @@ function showResult() {
                             <p class="text-sm text-gray-800 mt-0.5 safe-text">${step3}</p>
                         </div>
                     </div>
-                </div>`;
-        
-        if (question) {
-            const safeQ = escapeHtml(question);
-            html += `
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center gap-1.5 mb-2">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        <p class="text-xs text-gray-400 font-bold">追问</p>
-                    </div>
-                    <p class="text-sm text-gray-700 mb-3 safe-text">${safeQ}</p>
-                    <button id="btn-continue-follow" 
-                        class="btn-primary w-full text-sm" style="padding:10px;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                        <span>继续追问</span>
-                    </button>
-                </div>`;
-        }
-        
-        html += `</div>`;
-        container.innerHTML += html;
-        
-        if (question) {
-            const btn = document.getElementById('btn-continue-follow');
-            if (btn) {
-                btn.addEventListener('click', () => setQuestionAndGo(question));
-            }
-        }
+                </div>
+            </div>`;
     }
+    
+    // 7. 战略建议
+    const q = currentQuestion || '';
+    let advice = '';
+    let badge = '';
+    let badgeColor = '';
+    
+    if (q.includes('互认') || q.includes('国内认证') || q.includes('国际') || q.includes('先跑')) {
+        advice = '当前国内认证(大湾区标识/工信部申报)与欧盟电池法尚未自动互认,但方法学框架基本一致(功能单位均为 kg CO2e/kWh,系统边界均为摇篮到坟墓)。建议先跑国内(试错成本低、数据可复用约90%),同步准备EU合规;选择SGS/TÜV等中欧双边认可机构做核查,未来切换成本最低。';
+        badge = '建议行动';
+        badgeColor = '#059669';
+    } else if (q.includes('2027') || q.includes('阈值') || q.includes('该做什么')) {
+        advice = '距离2027年EU电池碳足迹阈值生效约12-16个月。建议分三阶段推进:1 现在-2026.12:完成国内申报跑通数据;2 2027.01-06:启动EU合规报告编制;3 2027.07起:根据阈值公告调整策略。不要等互认落地再行动,先做先用。';
+        badge = '时间紧迫';
+        badgeColor = '#dc2626';
+    } else if (q.includes('绿证') || q.includes('PPA')) {
+        advice = 'EU电池法计算方法授权法案对绿证/PPA有严格限制:仅认可直连绿电(物理PPA),不认可非捆绑绿证。战略层面:若工厂在可再生能源富集区(如四川水电、西北光伏),优先考虑物理PPA或现场自建可再生能源;若仅持有绿证,需向审计员额外提供电力来源的物理可追溯性证明。';
+        badge = '策略选择';
+        badgeColor = '#d97706';
+    } else if (q.includes('数据') || q.includes('行业平均') || q.includes('实测')) {
+        advice = '数据质量是碳足迹合规的核心竞争力。战略建议分三步:1 短期--能用实测绝不用默认值(EU默认值通常高于中国企业实际水平30-50%);2 中期--建立供应商碳数据年度收集机制;3 长期--投资LCA能力建设,将碳足迹管理从合规成本转化为产品溢价能力。';
+        badge = '长期策略';
+        badgeColor = '#059669';
+    } else {
+        advice = 'EU电池法合规是一项系统工程,建议遵循"先跑通数据→再优化质量→最后争取领先"的三步走策略。不要追求一次性完美,试运行期允许迭代修正。关键是先启动,在实践中逐步完善。';
+        badge = '通用建议';
+        badgeColor = '#64748b';
+    }
+    
+    if (advice) {
+        actionGuideHtml += `
+            <div class="pt-4 border-t border-gray-200">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full" style="background:${badgeColor}12; color:${badgeColor}; border:1px solid ${badgeColor}20;">${badge}</span>
+                </div>
+                <p class="text-sm text-gray-700 leading-relaxed safe-text">${advice}</p>
+            </div>`;
+    }
+    
+    if (actionGuideHtml) {
+        container.innerHTML += `
+            <div class="card mb-3 slide-up" style="border: 1.5px solid #05966920; background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 100%);">
+                <div class="p-4" style="background: linear-gradient(135deg, #05966908 0%, #05966903 100%); border-bottom: 1px solid #05966915;">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: #05966915; color: #059669;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-sm">行动指南</h3>
+                            <p class="text-[10px] text-gray-400 font-medium">从分析到落地的完整路径</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-5">
+                    ${actionGuideHtml}
+                </div>
+            </div>`;
+    }
+
+    // 8. 相关问题
+    container.innerHTML += renderRelatedQuestions();
+
+    // 9. 政策进展雷达
+    container.innerHTML += renderPolicyRadar();
+}
+
+function renderRelatedQuestions() {
+    const q = currentQuestion || '';
+    let questions = [];
+    
+    if (q.includes('互认') || q.includes('国内认证') || q.includes('先跑')) {
+        questions = [
+            '年出口5000万的电池厂,国内认证数据能复用到EU报告吗?',
+            'SGS和TÜV的碳足迹报告,以后互认了要重做吗?',
+            '只做EU市场,国内碳足迹申报是不是可以跳过?'
+        ];
+    } else if (q.includes('绿证') || q.includes('PPA')) {
+        questions = [
+            '四川工厂的清洁水电,欧盟认吗?',
+            '现场自建光伏,碳足迹怎么算?',
+            '绿证和PPA在EU电池法下的区别是什么?'
+        ];
+    } else if (q.includes('数据') || q.includes('行业平均')) {
+        questions = [
+            '供应商说没有碳足迹数据,有替代方案吗?',
+            '欧盟默认排放因子和中国实际值差多少?',
+            '碳足迹数据需要每年更新吗?'
+        ];
+    } else if (q.includes('多工厂') || q.includes('合并')) {
+        questions = [
+            '不同工厂的碳足迹差距很大,怎么办?',
+            '四川工厂vs江苏工厂,哪个更适合做碳足迹?',
+            '工厂搬迁后,历史数据还能用吗?'
+        ];
+    } else {
+        questions = [
+            '国内碳足迹申报和EU电池法,哪个先跑更划算?',
+            '正极材料供应商不配合给数据,我该怎么办?',
+            'EU电池碳足迹阈值大概会是多少?'
+        ];
+    }
+    
+    return `
+        <div class="card mb-3 slide-up" style="background: #f8fafc;">
+            <div class="p-4" style="border-bottom:1px solid rgba(0,0,0,0.04);">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center" style="color:#64748b;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm">相关问题</h3>
+                        <p class="text-[10px] text-gray-400 font-medium">其他企业也在问</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="space-y-2">
+                    ${questions.map((fq, i) => `
+                        <button onclick="setQuestionAndGo('${fq.replace(/'/g, "\\'")}')" class="w-full text-left p-3.5 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all group">
+                            <div class="flex items-center gap-3">
+                                <span class="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-[11px] font-bold text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 group-hover:border-blue-100 transition-all">${String.fromCharCode(65+i)}</span>
+                                <span class="text-sm text-gray-700 group-hover:text-gray-900 font-medium flex-1 leading-snug">${escapeHtml(fq)}</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gray-300 group-hover:text-blue-400 flex-shrink-0 transition-colors"><path d="M9 18l6-6-6-6"/></svg>
+                            </div>
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        </div>`;
+}
+
+function renderPolicyRadar() {
+    const q = currentQuestion || '';
+    let updates = [];
+    
+    if (q.includes('互认') || q.includes('国内认证') || q.includes('国际') || q.includes('先跑')) {
+        updates = [
+            { date: '2025.12', text: '奇瑞汽车获首个「中欧碳足迹数据互认」车型证书', highlight: true },
+            { date: '2026.08', text: '中国发布 GB/T 44893-2026 碳足迹核算国标', highlight: true },
+            { date: '2026.06', text: '与韩国、德国等开展碳足迹标签互认探索', highlight: false },
+            { date: '进行中', text: '电池领域互认：暂无明确时间表，预计2027-2028可能有突破', highlight: false }
+        ];
+    } else if (q.includes('2027') || q.includes('阈值') || q.includes('该做什么')) {
+        updates = [
+            { date: '2026.12', text: '工信部动力电池碳足迹申报试运行截止', highlight: true },
+            { date: '2027.02', text: 'EU电池护照(DPP) + SoH/可拆卸性强制生效', highlight: true },
+            { date: '2027.08', text: '尽职调查义务生效（可能推迟至€150M门槛）', highlight: false },
+            { date: '待定', text: 'EU电池碳足迹性能等级阈值：官方尚未公布', highlight: false }
+        ];
+    } else if (q.includes('绿证') || q.includes('PPA')) {
+        updates = [
+            { date: '2026.01', text: 'CBAM正式开征，进口商须购买CBAM证书', highlight: true },
+            { date: '持续', text: 'EU计算方法授权法案：仅认可物理PPA，非捆绑绿证受限', highlight: true },
+            { date: '2026.08', text: '中国发布新版温室气体排放因子数据库', highlight: false },
+            { date: '标杆', text: '宁德时代宜宾基地90%清洁电力供应模式', highlight: false }
+        ];
+    } else {
+        updates = [
+            { date: '2026.12', text: '工信部动力电池碳足迹申报试运行截止', highlight: true },
+            { date: '2027.02', text: 'EU电池护照(DPP)强制生效', highlight: true },
+            { date: '进行中', text: '中欧汽车碳足迹互认指南已发布，电池领域推进中', highlight: false },
+            { date: '待定', text: 'EU电池碳足迹性能等级阈值：官方尚未公布', highlight: false }
+        ];
+    }
+    
+    return `
+        <div class="card mb-3 slide-up" style="overflow:hidden;">
+            <div class="p-4" style="background:linear-gradient(135deg, #f59e0b08 0%, #d9770603 100%); border-bottom:1px solid rgba(217,119,6,0.08);">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background:rgba(217,119,6,0.1); color:#d97706;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-sm">政策进展雷达</h3>
+                        <p class="text-[10px] text-gray-400 font-medium">动态更新 · 基于公开信息</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4">
+                <div class="space-y-0 relative">
+                    <div class="absolute left-[2px] top-2 bottom-2 w-[2px] bg-gray-100 rounded-full"></div>
+                    ${updates.map((u, i) => `
+                        <div class="flex gap-3 relative pb-4 ${i === updates.length - 1 ? '' : ''}">
+                            <div class="flex-shrink-0 w-[6px] h-[6px] rounded-full mt-2 ${u.highlight ? 'bg-amber-500' : 'bg-gray-300'} ring-2 ${u.highlight ? 'ring-amber-100' : 'ring-gray-100'}"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <span class="text-[10px] font-bold ${u.highlight ? 'text-amber-600' : 'text-gray-400'}">${escapeHtml(u.date)}</span>
+                                    ${u.highlight ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-100">关键</span>' : ''}
+                                </div>
+                                <p class="text-xs text-gray-600 leading-relaxed">${escapeHtml(u.text)}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>`;
 }
 
 function renderRoleCard(type, avatar, title, subtitle, data) {
     const avatarClass = type === 'auditor' ? 'avatar-auditor' : type === 'legal' ? 'avatar-legal' : 'avatar-market';
     const riskClass = data.risk === '🔴' ? 'badge-red' : data.risk === '🟡' ? 'badge-yellow' : 'badge-green';
-    const urgency = data.risk === '🔴' ? '48小时内' : data.risk === '🟡' ? '5个工作日内' : '可独立完成';
+    const urgency = data.risk === '🔴' ? '48h内' : data.risk === '🟡' ? '5天内' : '可独立';
     const statement = escapeHtml(data.statement || '');
     const action = data.action ? escapeHtml(data.action) : '';
-    
+
     return `
-        <div class="card p-5 mb-3 slide-up">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="avatar ${avatarClass}">${avatar}</div>
-                <div>
-                    <h3 class="font-bold text-gray-800 text-sm">${title}</h3>
-                    <p class="text-[10px] text-gray-400 font-medium">${subtitle}</p>
+        <div class="card p-3.5 flex-1" style="min-width:0;">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="avatar ${avatarClass}" style="width:28px;height:28px;font-size:12px;">${avatar}</div>
+                <div class="min-w-0">
+                    <h3 class="font-bold text-gray-800 text-xs truncate">${title}</h3>
+                    <p class="text-[9px] text-gray-400 font-medium truncate">${subtitle}</p>
                 </div>
             </div>
-            <div class="text-sm text-gray-600 leading-relaxed safe-text">${formatText(statement)}</div>
-            ${action ? `<p class="text-sm mt-2 font-bold" style="color:#059669;">→ ${action}</p>` : ''}
-            <div class="mt-3">
-                <span class="${riskClass}">${data.risk} ${urgency}</span>
+            <div class="text-[11px] text-gray-600 leading-relaxed safe-text" style="display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;">${formatText(statement)}</div>
+            ${action ? `<p class="text-[11px] mt-1.5 font-bold" style="color:#059669;">→ ${action}</p>` : ''}
+            <div class="mt-2">
+                <span class="${riskClass}" style="font-size:9px;padding:2px 6px;">${data.risk} ${urgency}</span>
             </div>
         </div>`;
 }
@@ -1000,7 +1360,7 @@ function renderRoleCard(type, avatar, title, subtitle, data) {
 function formatText(text) {
     if (!text) return '';
     return text
-        .replace(/白话翻译：/g, '<span class="font-bold" style="color:#059669;">白话翻译：</span>')
+        .replace(/白话翻译:/g, '<span class="font-bold" style="color:#059669;">白话翻译:</span>')
         .replace(/【基于趋势推测】/g, '<span class="text-amber-500 text-xs font-bold">【基于趋势推测】</span>')
         .replace(/【待核实】/g, '<span class="text-red-500 text-xs font-bold">【待核实】</span>');
 }
@@ -1011,15 +1371,15 @@ function showShareModal() {
     if (currentResult.auditor) document.getElementById('share-risk-audit').textContent = currentResult.auditor.risk;
     if (currentResult.legal) document.getElementById('share-risk-legal').textContent = currentResult.legal.risk;
     if (currentResult.market) document.getElementById('share-risk-market').textContent = currentResult.market.risk;
-    
+
     const pathEl = document.getElementById('share-path');
     if (currentResult.calculator?.paths?.[0]) {
         const p = currentResult.calculator.paths[0];
-        pathEl.textContent = `如果${p.condition}，那么${p.action}`;
+        pathEl.textContent = `如果${p.condition},那么${p.action}`;
     } else {
         pathEl.textContent = '未生成决策路径';
     }
-    
+
     document.getElementById('share-modal').classList.remove('hidden');
 }
 
@@ -1038,14 +1398,14 @@ async function downloadShareCard() {
         showToast('图片已保存');
         trackEvent('share_card', { method: 'download' });
     } catch (e) {
-        showToast('保存失败，请截图');
+        showToast('保存失败,请截图');
         trackEvent('share_card_fail', { error: e.message });
     }
 }
 
 function copyResult() {
     const text = generateCopyText();
-    
+
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {
             showToast('已复制到剪贴板');
@@ -1068,24 +1428,24 @@ function fallbackCopy(text) {
         showToast('已复制到剪贴板');
         trackEvent('copy_result', { method: 'execCommand' });
     } catch (err) {
-        showToast('复制失败，请手动复制');
+        showToast('复制失败,请手动复制');
         trackEvent('copy_result_fail', {});
     }
     document.body.removeChild(textarea);
 }
 
 function generateCopyText() {
-    let text = `【合规透镜 · 三方推演报告】\n\n困惑：${currentQuestion}\n\n`;
-    if (currentResult.auditor) text += `👤 审计员：${currentResult.auditor.statement}\n→ ${currentResult.auditor.action} [${currentResult.auditor.risk}]\n\n`;
-    if (currentResult.legal) text += `👤 法规顾问：${currentResult.legal.statement}\n→ ${currentResult.legal.action} [${currentResult.legal.risk}]\n\n`;
-    if (currentResult.market) text += `👤 下游客户：${currentResult.market.statement}\n→ ${currentResult.market.action} [${currentResult.market.risk}]\n\n`;
+    let text = `【合规透镜 · 三方推演报告】\n\n困惑:${currentQuestion}\n\n`;
+    if (currentResult.auditor) text += `👤 审计员:${currentResult.auditor.statement}\n→ ${currentResult.auditor.action} [${currentResult.auditor.risk}]\n\n`;
+    if (currentResult.legal) text += `👤 法规顾问:${currentResult.legal.statement}\n→ ${currentResult.legal.action} [${currentResult.legal.risk}]\n\n`;
+    if (currentResult.market) text += `👤 下游客户:${currentResult.market.statement}\n→ ${currentResult.market.action} [${currentResult.market.risk}]\n\n`;
     if (currentResult.calculator?.paths) {
-        text += `📊 决策路径：\n`;
+        text += `📊 决策路径:\n`;
         currentResult.calculator.paths.forEach((p, i) => {
-            text += `${i+1}. 如果${p.condition}，那么${p.action} [${p.risk}]\n`;
+            text += `${i+1}. 如果${p.condition},那么${p.action} [${p.risk}]\n`;
         });
     }
-    text += `\n⚡ 卡点攻坚：\n今天：${currentResult.deep_dive?.step1 || ''}\n本周：${currentResult.deep_dive?.step2 || ''}\n长期：${currentResult.deep_dive?.step3 || ''}`;
+    text += `\n⚡ 卡点攻坚:\n今天:${currentResult.deep_dive?.step1 || ''}\n本周:${currentResult.deep_dive?.step2 || ''}\n长期:${currentResult.deep_dive?.step3 || ''}`;
     return text;
 }
 
@@ -1097,49 +1457,49 @@ function showToast(msg) {
 }
 
 // ====== System Prompt ======
-const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎，专门处理 EU 2023/1542 电池碳足迹合规问题。
+const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎,专门处理 EU 2023/1542 电池碳足迹合规问题。
 
 【核心任务】
-用户输入一个真实合规困惑，你必须同时扮演 6 个角色，并输出一个严格符合以下 JSON Schema 的响应对象。
+用户输入一个真实合规困惑,你必须同时扮演 6 个角色,并输出一个严格符合以下 JSON Schema 的响应对象。
 
-【全局规则（所有角色必须遵守）】
-1. 术语双轨制：涉及强制性义务、计算方法、时间节点时，先给精确法规编号（如 Art. 7(3)、Annex II §4.1），然后紧跟"白话翻译："用通俗语言解释。
-2. 事实红线（绝对不得违反）：
-   - 碳抵消（绿证、植树造林、CCER等）绝对不得计入电池碳足迹声明值，只能作为企业运营减碳的额外信息。
-   - 使用阶段（Use Phase）明确排除在系统边界之外，绝对不得建议计入。
-   - 阳极、阴极、电解液、隔膜、电芯外壳必须用公司特定数据（Primary Data），严禁用行业默认值（Secondary Data）作为声明值。
-   - 不得编造未生效授权法案的具体阈值数字；若涉及推测，必须加【基于趋势推测】前缀。
-3. 角色之间必须有真实的观点冲突：每个角色在发言时，必须明确反驳或质疑前一个角色的某个具体论点（"表面同意实则补充"不算冲突）。
-4. 每部分字数控制：statement/action 各不超过 80 字；其他字段不超过 50 字。
-5. 风险标签和时效必须明确：
-   - 🟢 = 低风险，可独立完成
-   - 🟡 = 中风险，需外部配合（建议 5 个工作日内启动）
-   - 🔴 = 高风险，存在否决项或重大财务影响（需 48 小时内决策）
-   - 时效选项：今天 / 本周 / 本月
+【全局规则(所有角色必须遵守)】
+1. 术语双轨制:涉及强制性义务、计算方法、时间节点时,先给精确法规编号(如 Art. 7(3)、Annex II §4.1),然后紧跟"白话翻译:"用通俗语言解释。
+2. 事实红线(绝对不得违反):
+   - 碳抵消(绿证、植树造林、CCER等)绝对不得计入电池碳足迹声明值,只能作为企业运营减碳的额外信息。
+   - 使用阶段(Use Phase)明确排除在系统边界之外,绝对不得建议计入。
+   - 阳极、阴极、电解液、隔膜、电芯外壳必须用公司特定数据(Primary Data),严禁用行业默认值(Secondary Data)作为声明值。
+   - 不得编造未生效授权法案的具体阈值数字;若涉及推测,必须加【基于趋势推测】前缀。
+3. 角色之间必须有真实的观点冲突:每个角色在发言时,必须明确反驳或质疑前一个角色的某个具体论点("表面同意实则补充"不算冲突)。
+4. 每部分字数控制:statement/action 各不超过 80 字;其他字段不超过 50 字。
+5. 风险标签和时效必须明确:
+   - 🟢 = 低风险,可独立完成
+   - 🟡 = 中风险,需外部配合(建议 5 个工作日内启动)
+   - 🔴 = 高风险,存在否决项或重大财务影响(需 48 小时内决策)
+   - 时效选项:今天 / 本周 / 本月
 
-【输出 JSON Schema（必须完全遵循）】
+【输出 JSON Schema(必须完全遵循)】
 {
   "auditor": {
-    "statement": "审计员的核心观点，含法规编号+白话翻译，并点出对上一个角色的反驳（80字内）",
-    "action": "给用户的具体下一步动作（30字内）",
+    "statement": "审计员的核心观点,含法规编号+白话翻译,并点出对上一个角色的反驳(80字内)",
+    "action": "给用户的具体下一步动作(30字内)",
     "risk": "🟢/🟡/🔴",
     "deadline": "今天/本周/本月"
   },
   "legal": {
-    "statement": "法规顾问观点，含立法意图或时间线，必须反驳审计员或市场视角（80字内）",
-    "action": "具体动作（30字内）",
+    "statement": "法规顾问观点,含立法意图或时间线,必须反驳审计员或市场视角(80字内)",
+    "action": "具体动作(30字内)",
     "risk": "🟢/🟡/🔴",
     "deadline": "今天/本周/本月"
   },
   "market": {
-    "statement": "下游客户/市场视角，结果导向，用商业案例或同行做法反驳前两者（80字内）",
-    "action": "具体动作（30字内）",
+    "statement": "下游客户/市场视角,结果导向,用商业案例或同行做法反驳前两者(80字内)",
+    "action": "具体动作(30字内)",
     "risk": "🟢/🟡/🔴",
     "deadline": "今天/本周/本月"
   },
   "calculator": {
-    "irrelevant": "一句总结三方争论中不影响实际操作的点（30字内）",
-    "key_conflict": "一句提炼影响决策的核心矛盾点（30字内）",
+    "irrelevant": "一句总结三方争论中不影响实际操作的点(30字内)",
+    "key_conflict": "一句提炼影响决策的核心矛盾点(30字内)",
     "paths": [
       {
         "condition": "如果 [条件A]",
@@ -1154,9 +1514,9 @@ const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎，专门处
         "deadline": "今天/本周/本月"
       }
     ],
-    "missing_data": ["需要用户补充的数据项1", "数据项2（最多3项）"]
+    "missing_data": ["需要用户补充的数据项1", "数据项2(最多3项)"]
   },
-  "moderator": "一句话总结当前分歧焦点，并指明用户最可能的卡点（40字内）",
+  "moderator": "一句话总结当前分歧焦点,并指明用户最可能的卡点(40字内)",
   "deep_dive": {
     "step1": "今天下班前可做的动作",
     "step2": "本周内必须完成的决策",
@@ -1166,15 +1526,15 @@ const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎，专门处
 }
 
 【角色人格定义】
-- 审计员（TÜV/SGS）：死磕证据链，默认从严解释，爱问"依据在哪？"。天然反对任何"弹性空间"或"行业惯例"。
-- 法规顾问（政策追踪）：看立法 intent，给时间线，提醒缓冲期。天然反对"死守条文"的过度保守。
-- 市场视角（出口/OEM）：结果导向，抢订单，认为"先上车再迭代"比"完美数据"更现实。天然反对"等数据齐全再行动"的保守派。
+- 审计员(TÜV/SGS):死磕证据链,默认从严解释,爱问"依据在哪?"。天然反对任何"弹性空间"或"行业惯例"。
+- 法规顾问(政策追踪):看立法 intent,给时间线,提醒缓冲期。天然反对"死守条文"的过度保守。
+- 市场视角(出口/OEM):结果导向,抢订单,认为"先上车再迭代"比"完美数据"更现实。天然反对"等数据齐全再行动"的保守派。
 
 【输出要求】
-- 你必须只输出一个合法的 JSON 对象，不要包含任何 markdown 代码块、注释、或额外文字。
-- 所有字段必须填满，不得留空。
-- 如果你在 paths 中涉及推测性阈值，必须在 condition 或 action 中明确标注【基于趋势推测】。
-- 如果信息不足无法给出 paths，则在 paths 中只输出一条通用路径，并在 missing_data 中列出所需数据。`;
+- 你必须只输出一个合法的 JSON 对象,不要包含任何 markdown 代码块、注释、或额外文字。
+- 所有字段必须填满,不得留空。
+- 如果你在 paths 中涉及推测性阈值,必须在 condition 或 action 中明确标注【基于趋势推测】。
+- 如果信息不足无法给出 paths,则在 paths 中只输出一条通用路径,并在 missing_data 中列出所需数据。`;
 </script>
 </body>
 </html>
