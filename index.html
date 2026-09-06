@@ -1300,9 +1300,7 @@ function showPage(page) {
     
     if (page === 'ai') { initTuiyan(); }
     
-    if (page === 'ai') {
-        scrollToBottom();
-    } else if (page === 'plan') {
+    if (page === 'plan') {
         renderPlanOverview();
     }
 }
@@ -1638,248 +1636,6 @@ function sharePlan() {
 function doShare(text) {
     if (navigator.share) { navigator.share({ title: '电池EU合规健康度自检', text: text, url: 'https://compliance-battery.com' }); }
     else { navigator.clipboard.writeText(text).then(() => alert('已复制到剪贴板，快去分享吧！')); }
-}
-
-// ==================== AI咨询 ====================
-const chatHistory = [];
-
-function scrollToBottom() {
-    const container = document.getElementById('chat-messages');
-    container.scrollTop = container.scrollHeight;
-}
-
-function sendPreset(text) {
-    document.getElementById('chat-input').value = text;
-    sendMessage();
-}
-
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-    
-    // 添加用户消息
-    addMessage(text, 'user');
-    input.value = '';
-    chatHistory.push({ role: 'user', content: text });
-    
-    // 显示输入中
-    const typingId = addTyping();
-    scrollToBottom();
-    
-    try {
-        const response = await fetch('/api/debate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question: text, history: chatHistory.slice(-5) })
-        });
-        
-        removeTyping(typingId);
-        
-        if (!response.ok) throw new Error('API error');
-        const data = await response.json();
-        
-        const aiReply = formatAIResponse(data);
-        addMessage(aiReply, 'ai');
-        chatHistory.push({ role: 'assistant', content: aiReply });
-    } catch (err) {
-        removeTyping(typingId);
-        const fallback = getFallbackResponse(text);
-        addMessage(fallback, 'ai');
-        chatHistory.push({ role: 'assistant', content: fallback });
-    }
-    
-    scrollToBottom();
-}
-
-function addMessage(text, type) {
-    const container = document.getElementById('chat-messages');
-    const div = document.createElement('div');
-    div.className = 'flex gap-3 fade-in';
-    
-    if (type === 'user') {
-        div.innerHTML = `<div class="chat-bubble chat-user ml-auto">${escapeHtml(text)}</div>`;
-    } else {
-        div.innerHTML = `
-            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-sm">🔍</span></div>
-            <div class="chat-bubble chat-ai">${text}</div>
-        `;
-    }
-    container.appendChild(div);
-}
-
-function addTyping() {
-    const container = document.getElementById('chat-messages');
-    const id = 'typing-' + Date.now();
-    const div = document.createElement('div');
-    div.id = id;
-    div.className = 'flex gap-3';
-    div.innerHTML = `
-        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-sm">🔍</span></div>
-        <div class="chat-bubble chat-ai"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
-    `;
-    container.appendChild(div);
-    scrollToBottom();
-    return id;
-}
-
-function removeTyping(id) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-}
-
-function formatAIResponse(data) {
-    // 如果后端返回结构化数据
-    if (data.calculator) {
-        return `<p class="font-medium mb-2">💡 核心结论</p><p class="mb-3">${data.calculator.decision || '基于现有信息分析如下：'}</p>
-                <p class="font-medium mb-2">🧭 行动建议</p><p>${(data.calculator.path || []).join('</p><p>')}</p>
-                <p class="text-xs text-gray-500 mt-3">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`;
-    }
-    // 如果后端返回文本
-    return escapeHtml(data.text || data.message || JSON.stringify(data)).replace(/\n/g, '<br>');
-}
-
-function getFallbackResponse(question) {
-    const responses = {
-        '国内认证能和国际互认吗？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3">目前<strong>不能完全互认</strong>，但存在数据兼容路径。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>国内认证（大湾区碳足迹标识）和EU认证（Notified Body审核）方法学不同</li>
-                <li>大湾区采用ISO 14067 + 本地化因子；EU采用JRC方法学 + EF3.0因子库</li>
-                <li>数据可以复用（BOM、能耗、运输数据），但需要按EU规则重新计算</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>国内认证机构提供EU辅助服务</strong> THEN 委托其做"双标"报告 → 🟢 省时省力</p>
-                <p>IF <strong>国内认证不做EU</strong> THEN 用国内数据包做基础，找SGS/TÜV补EU差分 → 🟡 需要额外费用</p>
-                <p>ELSE 从零开始按EU规则重做 → 🔴 成本最高，不建议</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-        
-        '国内申报和EU合规，哪个先跑？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3"><strong>建议先跑EU合规</strong>，国内申报可并行。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>EU合规有硬性deadline（2027.2.18），逾期=市场禁入</li>
-                <li>国内申报目前为自愿性/鼓励性，无强制处罚</li>
-                <li>EU合规数据包可以覆盖国内申报80%+的数据需求</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>2027年前必须出口EU</strong> THEN 优先EU合规，国内申报同步推进 → 🟢 最优策略</p>
-                <p>IF <strong>暂不出口EU，只做国内生意</strong> THEN 先跑国内申报，积累数据 → 🟡 为未来出海做准备</p>
-                <p>IF <strong>两边都要做但资源有限</strong> THEN EU合规优先，国内申报延后1-2季度 → 🔴 确保EU deadline不miss</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-        
-        '供应商不给特定数据怎么办？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3">三条路径：<strong>催、换、估</strong>，优先"催"。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>"催"：发正式函件，给明确deadline，抄送对方高管</li>
-                <li>"换"：启动备选供应商评估（至少2家）</li>
-                <li>"估"：用行业平均值替代，但报告需标注数据质量等级</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>供应商3个月内能给数据</strong> THEN 内部对标+持续催办 → 🟢 最优</p>
-                <p>IF <strong>供应商给不了但愿意配合</strong> THEN 提供填报模板，手把手教 → 🟡 需投入时间</p>
-                <p>IF <strong>供应商拒绝配合</strong> THEN 启动备选供应商+最坏情况估算 → 🔴 今天就开始</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-        
-        '碳抵消能算进声明吗？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3"><strong>不能。</strong>EU电池法明确禁止碳抵消计入CF值。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>EU 2023/1542第7条：碳足迹声明必须基于实际排放，不得使用碳抵消</li>
-                <li>买了绿证/碳汇？可以宣传ESG，但不能用来"降低"CF值</li>
-                <li>真正有效的降碳：换绿电、改工艺、轻量化设计</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>目前有碳抵消在CF计算中</strong> THEN 立即剔除，重新核算 → 🔴 今天做</p>
-                <p>IF <strong>CF值偏高想降碳</strong> THEN 评估屋顶光伏/绿电采购ROI → 🟡 本月启动</p>
-                <p>IF <strong>已买绿证想物尽其用</strong> THEN 用于ESG报告/品牌宣传，不用于CF → 🟢 合法用途</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-
-        '三年前的数据还能用吗？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3"><strong>可以，但有条件。</strong>EU要求数据反映"当前"生产状况。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>设备/工艺/供应商没变 → 三年前的数据可以继续用</li>
-                <li>换了设备/改了工艺/换了供应商 → 需要重新收集/验证</li>
-                <li>排放因子必须用最新版（国家因子库会更新）</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>生产工艺和供应商完全没变</strong> THEN 三年数据可用，更新排放因子版本即可 → 🟢 省时</p>
-                <p>IF <strong>工艺/供应商有变化</strong> THEN 变化部分重新测量，不变部分沿用 → 🟡 混合策略</p>
-                <p>IF <strong>无法确认是否有变化</strong> THEN 全部重新收集，避免审计风险 → 🔴 最保险</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-
-        '使用阶段排放要算吗？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3"><strong>不算。</strong>EU电池法碳足迹声明排除使用阶段。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>EU 2023/1542 系统边界：原材料→生产→分销→回收（排除使用阶段）</li>
-                <li>原因：使用阶段排放取决于用户行为（充电电网、使用习惯），制造商无法控制</li>
-                <li>但：回收阶段必须纳入计算</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>正在做全生命周期LCA</strong> THEN 使用阶段可以算（内部参考），但CF声明中剔除 → 🟢 双轨并行</p>
-                <p>IF <strong>只准备EU合规声明</strong> THEN 不需要收集使用阶段数据 → 🟡 省掉这块工作量</p>
-                <p>IF <strong>客户要求包含使用阶段</strong> THEN 单独做完整LCA报告，与CF声明分开 → 🔴 额外需求</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-
-        '多工厂数据能合并吗？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3"><strong>可以合并，但有限制条件。</strong></p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>EU要求：同一制造商、同一型号、同一生产流程可以合并</li>
-                <li>不同工厂如果工艺/设备/电网因子差异大，需分别计算后加权平均</li>
-                <li>合并后必须保留各工厂的原始数据备查</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>多工厂工艺/电网完全相同</strong> THEN 直接合并计算 → 🟢 最简单</p>
-                <p>IF <strong>工艺相同但电网不同</strong> THEN 分别算能耗排放，加权平均 → 🟡 需要加权</p>
-                <p>IF <strong>工艺/设备差异大</strong> THEN 分别出报告，或选择代表性工厂 → 🔴 不能简单合并</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
-
-        '电池护照71项数据点怎么准备？': `<p class="font-medium mb-2">💡 核心结论</p>
-            <p class="mb-3">71项看着多，<strong>真正难的是20项</strong>——需要供应商配合或BMS改造。</p>
-            <p class="font-medium mb-2">📖 详细分析</p>
-            <ul class="list-disc ml-4 mb-3 space-y-1">
-                <li>约30项企业内部已有（ERP/PLM数据整理即可）</li>
-                <li>约20项需要供应商配合（回收料证明、材料成分）</li>
-                <li>约10项需要BMS改造（实时容量、内阻数据）</li>
-                <li>约10项暂不填报（等授权法案出台）</li>
-            </ul>
-            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-                <p>IF <strong>还没开始准备</strong> THEN 先用自检工具定位缺口 → 🔴 立即</p>
-                <p>IF <strong>已梳理但缺供应商数据</strong> THEN 发函+启动备选供应商评估 → 🟡 本周</p>
-                <p>IF <strong>BMS没预留数据接口</strong> THEN 联系BMS厂商评估改造周期（6-12个月） → 🟢 尽早</p>
-            </div>
-            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`
-    };
-    
-    return responses[question] || `<p class="font-medium mb-2">💡 核心结论</p>
-        <p class="mb-3">这个问题涉及EU电池法具体条款，建议结合你的实际情况分析。</p>
-        <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
-        <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
-            <p>IF <strong>你有具体场景描述</strong> THEN 告诉我电池类型/规模/当前卡点 → 🟢 我帮你拆解</p>
-            <p>IF <strong>不确定从哪开始</strong> THEN 先用上方"合规自检"功能 → 🟡 2分钟定位</p>
-            <p>ELSE 继续追问，我会持续补充分析 → 🔴 随时找我</p>
-        </div>
-        <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`;
 }
 
 
@@ -2297,7 +2053,8 @@ async function getUserIP() {
 function getQuotaStatus() {
     const today = new Date().toDateString();
     const deviceID = getDeviceID();
-    const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
+    let stored = {};
+    try { stored = JSON.parse(safeLS('get', 'cl_usage') || '{}'); } catch(e) {}
 
     if (stored.date !== today) {
         const fresh = { date: today, deviceID: deviceID, ip: userIP || 'unknown', count: 0 };
@@ -2316,7 +2073,8 @@ function getQuotaStatus() {
 
 function consumeQuota() {
     const today = new Date().toDateString();
-    const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
+    let stored = {};
+    try { stored = JSON.parse(safeLS('get', 'cl_usage') || '{}'); } catch(e) {}
 
     if (stored.date !== today) {
         safeLS('set', 'cl_usage', JSON.stringify({
@@ -2548,7 +2306,8 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
 
         // API失败时退还额度
         if (!isDemo) {
-            const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
+            let stored = {};
+            try { stored = JSON.parse(safeLS('get', 'cl_usage') || '{}'); } catch(e) {}
             if (stored.count > 0) {
                 stored.count -= 1;
                 safeLS('set', 'cl_usage', JSON.stringify(stored));
@@ -3114,9 +2873,10 @@ function generateCopyText() {
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
+    if (!toast) return;
     toast.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 2500);
+    setTimeout(() => { if (toast) toast.classList.remove('show'); }, 2500);
 }
 
 // ====== System Prompt ======
@@ -3249,5 +3009,9 @@ function confirmModalAction() {
     closeConfirmModal();
 }
 </script>
+
+<!-- Toast通知 -->
+<div id="toast" class="toast"></div>
+
 </body>
 </html>
