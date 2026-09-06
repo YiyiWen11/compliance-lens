@@ -1,29 +1,180 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>合规透镜 Compliance Lens - EU电池法三方推演</title>
-<!-- Google Analytics 4 - 请替换 G-XXXXXXXXXX 为你的追踪ID -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-7YHXE1F7XG"></script>
-<script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-7YHXE1F7XG');
-
-    // 安全的事件追踪封装
-    function trackEvent(eventName, params) {
-        if (typeof gtag === 'function') {
-            gtag('event', eventName, params || {});
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>合规透镜 - 电池EU合规自检与AI咨询</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        
+        * { 
+            -webkit-tap-highlight-color: transparent;
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
         }
-    }
-</script>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
+        
+        body { background: #f8fafc; min-height: 100vh; }
+        
+        .step-indicator { transition: all 0.3s ease; }
+        .step-indicator.active { background: #059669; color: white; transform: scale(1.1); }
+        
+        .option-card {
+            transition: all 0.2s ease;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .option-card:hover { border-color: #059669; background: #f0fdf4; }
+        .option-card.selected {
+            border-color: #059669;
+            background: #f0fdf4;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+        
+        .radar-container { position: relative; width: 260px; height: 260px; margin: 0 auto; }
+        .score-bar { transition: width 1s ease-out; }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .priority-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .priority-p0 { background: #ef4444; }
+        .priority-p1 { background: #f59e0b; }
+        .priority-p2 { background: #10b981; }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transition: all 0.2s;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+        
+        .peer-ranking { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* AI咨询样式 */
+        .chat-bubble {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        .chat-user {
+            background: #059669;
+            color: white;
+            border-bottom-right-radius: 4px;
+            margin-left: auto;
+        }
+        .chat-ai {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+        }
+        .typing-dot {
+            width: 6px; height: 6px; background: #94a3b8; border-radius: 50%;
+            display: inline-block; animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+        
+        .nav-item {
+            transition: all 0.2s;
+            position: relative;
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 3px;
+            background: #059669;
+            border-radius: 2px;
+        }
+        
+        .hidden { display: none !important; }
+        
+        /* === 7站渐进清单样式 === */
+        .station-card {
+            transition: all 0.3s ease;
+            border: 2px solid #e2e8f0;
+        }
+        .station-card.active {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+        .station-card.locked {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        .station-card.completed {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+        .station-progress {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .station-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #059669, #10b981);
+            transition: width 0.5s ease;
+        }
+        .task-item {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .task-item.completed {
+            background: #f0fdf4;
+            border-left-color: #10b981;
+        }
+        .task-item:hover {
+            background: #f8fafc;
+        }
+        .station-number {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .station-number.done {
+            background: #10b981; color: white;
+        }
+        .station-number.active {
+            background: #059669; color: white;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
+        }
+        .station-number.locked {
+            background: #e2e8f0; color: #94a3b8;
+        }
+        .overall-progress {
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+    
+        /* === MVP 三方推演样式 === */
+
 * { -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
+
 
 /* ===== 品牌配色 ===== */
 :root {
@@ -257,12 +408,481 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
     background: #e2e8f0;
     margin: 16px 0;
 }
-</style>
-</head>
-<body class="min-h-screen" style="background: #f0f4f8;">
 
-<!-- ====== 首页 ====== -->
-<div id="page-home" class="min-h-screen flex flex-col">
+</style>
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7YHXE1F7XG"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-7YHXE1F7XG');
+        
+        // 安全的事件追踪封装
+        function trackEvent(eventName, params) {
+            if (typeof gtag === 'function') {
+                gtag('event', eventName, params || {});
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+
+<div id="app" class="max-w-md mx-auto bg-white min-h-screen shadow-lg">
+    
+    <!-- 头部 -->
+
+    <!-- ============ 首页（导航入口） ============ -->
+    <div id="page-home" class="min-h-screen bg-[#fafafa]">
+    <!-- 顶部导航 -->
+    <div class="sticky top-0 z-40 bg-[#fafafa]/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-sm font-bold text-slate-800 tracking-tight">合规透镜</h1>
+                    <p class="text-[10px] text-slate-400 font-medium">Compliance Lens</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-[10px] text-slate-400 font-medium">在线</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero 区 -->
+    <div class="max-w-lg mx-auto px-5 pt-6 pb-4">
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 p-6 text-white">
+            <!-- 装饰圆点 -->
+            <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 bg-emerald-500/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+            
+            <div class="relative z-10">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/10 rounded-full text-[10px] font-medium text-white/80 mb-4 border border-white/10">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    持续更新 · 基于真实研究
+                </div>
+                <h2 class="text-xl font-bold leading-snug mb-2">电池EU合规<br/>从困惑到行动</h2>
+                <p class="text-xs text-white/60 leading-relaxed">一个在深圳做电池合规工具的 builder，<br/>把研究过程做成工具，帮你少走弯路。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心功能：AI三方推演 -->
+    <div class="max-w-lg mx-auto px-5 pb-3">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="w-1 h-3 bg-emerald-500 rounded-full"></span>
+            核心工具
+        </div>
+        
+        <div onclick="showPage('ai')" class="group cursor-pointer">
+            <div class="relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:border-emerald-200 transition-all duration-300">
+                <!-- 顶部色条 -->
+                <div class="h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+                
+                <div class="p-5">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
+                                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="font-bold text-slate-800 text-base">AI 合规推演</h3>
+                                <span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-600 text-[9px] font-bold rounded border border-emerald-100">NEW</span>
+                            </div>
+                            <p class="text-xs text-slate-500 leading-relaxed">输入一个具体困惑，三方角色同时推演<br/>审计员 · 法规顾问 · 下游客户</p>
+                            
+                            <div class="flex items-center gap-3 mt-3">
+                                <div class="flex -space-x-1.5">
+                                    <div class="w-5 h-5 rounded-full bg-slate-700 border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">审</div>
+                                    <div class="w-5 h-5 rounded-full bg-slate-600 border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">法</div>
+                                    <div class="w-5 h-5 rounded-full bg-slate-500 border-2 border-white flex items-center justify-center text-[8px] text-white font-bold">市</div>
+                                </div>
+                                <span class="text-[10px] text-slate-400">3方视角 · IF-THEN 决策路径</span>
+                            </div>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- 底部数据条 -->
+                <div class="px-5 py-2.5 bg-gray-50/80 border-t border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] text-slate-400"><span class="font-bold text-slate-600">8</span> 个热门问题</span>
+                        <span class="w-px h-3 bg-gray-200"></span>
+                        <span class="text-[10px] text-slate-400">每日 <span class="font-bold text-slate-600">5</span> 次免费</span>
+                    </div>
+                    <span class="text-[10px] font-medium text-emerald-600">立即试用 →</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 辅助工具 -->
+    <div class="max-w-lg mx-auto px-5 pb-4">
+        <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <span class="w-1 h-3 bg-slate-300 rounded-full"></span>
+            辅助工具
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+            <!-- 合规健康度自检 -->
+            <div onclick="showPage('check')" class="group cursor-pointer">
+                <div class="rounded-2xl bg-white border border-gray-100 p-4 hover:shadow-md hover:border-slate-200 transition-all duration-300 h-full">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3 group-hover:bg-slate-100 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2">
+                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-slate-700 text-sm mb-1">健康度自检</h3>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">2分钟5维评估<br/>雷达图+行动清单</p>
+                </div>
+            </div>
+            
+            <!-- 完整合规计划 -->
+            <div onclick="showPage('plan')" class="group cursor-pointer">
+                <div class="rounded-2xl bg-white border border-gray-100 p-4 hover:shadow-md hover:border-slate-200 transition-all duration-300 h-full">
+                    <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3 group-hover:bg-slate-100 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2">
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-slate-700 text-sm mb-1">合规路线图</h3>
+                    <p class="text-[11px] text-slate-400 leading-relaxed">7站56步渐进解锁<br/>从分类到持续合规</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部 -->
+    <div class="max-w-lg mx-auto px-5 py-6 border-t border-gray-100">
+        <div class="flex items-center justify-center gap-2 mb-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+            <span class="text-xs text-slate-400 font-medium">电池出海合规Lab 出品</span>
+        </div>
+        <p class="text-[10px] text-slate-300 text-center">基于 EU 2023/1542 · 信息仅供参考 · 请以官方最新法规为准</p>
+        <div class="flex items-center justify-center gap-4 mt-3">
+            <a href="https://mp.weixin.qq.com" target="_blank" class="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors">公众号</a>
+        </div>
+    </div>
+</div>
+
+
+    
+
+    <!-- ============ 自检页面 ============ -->
+    <div id="page-check" class="hidden">
+        <!-- 步骤1：选电池类型 -->
+        <div id="check-step-1" class="p-5">
+            <div class="flex items-center gap-2 mb-6">
+                <button onclick="showPage('home')" class="text-gray-500 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span class="step-indicator active w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">1</span>
+                    <span class="step-indicator w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center font-bold">2</span>
+                    <span class="step-indicator w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center font-bold">3</span>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-1">你的电池类型是？</h2>
+            <p class="text-sm text-gray-500 mb-4">不同类型，合规要求不同</p>
+
+            <div class="space-y-3">
+                <div class="option-card rounded-xl p-4" onclick="selectBatteryType('ev', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-2xl">🚗</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">EV动力电池</h3>
+                            <p class="text-xs text-gray-500">电动汽车/混动汽车</p>
+                        </div>
+                        <span class="text-xs text-red-500 font-medium">⚠️ 标签已强制</span>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectBatteryType('industrial', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-2xl">🏭</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">工业电池（>2kWh）</h3>
+                            <p class="text-xs text-gray-500">储能/工业设备</p>
+                        </div>
+                        <span class="text-xs text-orange-500 font-medium">⏰ 2027.2</span>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectBatteryType('lmt', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-2xl">🚲</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">LMT电池</h3>
+                            <p class="text-xs text-gray-500">电动自行车/平衡车</p>
+                        </div>
+                        <span class="text-xs text-gray-400 font-medium">2030.2</span>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectBatteryType('storage', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center text-2xl">🔋</div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800">外部储能</h3>
+                            <p class="text-xs text-gray-500">家用/商用储能系统</p>
+                        </div>
+                        <span class="text-xs text-orange-500 font-medium">⏰ 2027.2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤2：企业规模 -->
+        <div id="check-step-2" class="p-5 hidden">
+            <div class="flex items-center gap-2 mb-6">
+                <button onclick="goToCheckStep(1)" class="text-gray-500 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span class="step-indicator w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">✓</span>
+                    <span class="step-indicator active w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">2</span>
+                    <span class="step-indicator w-6 h-6 rounded-full bg-gray-200 text-gray-500 text-xs flex items-center justify-center font-bold">3</span>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-1">年出口欧盟规模？</h2>
+            <p class="text-sm text-gray-500 mb-4">规模越大，合规监管关注度越高</p>
+
+            <div class="space-y-3">
+                <div class="option-card rounded-xl p-4" onclick="selectScale('small', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">🌱</div>
+                        <div><h3 class="font-bold text-gray-800">3000万以下</h3><p class="text-xs text-gray-500">初创/小规模出口</p></div>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectScale('medium', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">🌿</div>
+                        <div><h3 class="font-bold text-gray-800">3000万 - 1亿</h3><p class="text-xs text-gray-500">成长期企业</p></div>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectScale('large', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">🌳</div>
+                        <div><h3 class="font-bold text-gray-800">1亿 - 5亿</h3><p class="text-xs text-gray-500">成熟出口企业</p></div>
+                    </div>
+                </div>
+                <div class="option-card rounded-xl p-4" onclick="selectScale('xlarge', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">🏢</div>
+                        <div><h3 class="font-bold text-gray-800">5亿以上</h3><p class="text-xs text-gray-500">行业头部企业</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 步骤3：勾选已完成 -->
+        <div id="check-step-3" class="p-5 hidden">
+            <div class="flex items-center gap-2 mb-4">
+                <button onclick="goToCheckStep(2)" class="text-gray-500 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div class="flex items-center gap-2">
+                    <span class="step-indicator w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">✓</span>
+                    <span class="step-indicator w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">✓</span>
+                    <span class="step-indicator active w-6 h-6 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-gray-800 mb-1">你已完成哪些？</h2>
+            <p class="text-sm text-gray-500 mb-3">多选，没完成的不选</p>
+
+            <div class="flex gap-2 mb-4">
+                <button onclick="checkAll(false)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">都没做（我刚起步）</button>
+                <button onclick="checkAll(true)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">全选（我都做完了）</button>
+            </div>
+
+            <div class="space-y-3" id="checklist-container"></div>
+
+            <button onclick="calculateResult()" class="btn-primary w-full mt-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg">
+                生成我的合规报告
+            </button>
+        </div>
+
+        <!-- 结果页 -->
+        <div id="check-result" class="hidden">
+            <div class="p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <button onclick="showPage('home')" class="text-gray-500 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                    </button>
+                    <h2 class="text-xl font-bold text-gray-800">我的合规报告</h2>
+                </div>
+
+                <div class="flex gap-2 mb-4 flex-wrap" id="user-tags"></div>
+
+                <div class="text-center mb-4">
+                    <div class="radar-container mb-4">
+                        <canvas id="radarChart" width="260" height="260"></canvas>
+                    </div>
+                    <div class="text-5xl font-bold text-emerald-600" id="total-score">0%</div>
+                    <p class="text-sm text-gray-500 mt-1">综合完成度</p>
+                </div>
+
+                <div class="peer-ranking rounded-xl p-4 text-white mb-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-300">同行排名（估算）</p>
+                            <p class="text-2xl font-bold" id="peer-ranking">前 35%</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs text-gray-300" id="result-deadline-label">剩余时间</p>
+                            <p class="text-xl font-bold" id="days-left">180天</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">基于同类企业匿名数据估算，仅供参考（完成度越高，排名越靠前）</p>
+                </div>
+
+                <div class="space-y-4 mb-4">
+                    <h3 class="font-bold text-gray-800">五维详情</h3>
+                    <div id="dimension-details"></div>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                    <h3 class="font-bold text-gray-800 mb-3">建议优先级</h3>
+                    <div id="priority-list" class="space-y-3"></div>
+                </div>
+
+                <div class="space-y-3">
+                    <button onclick="showFullPlan()" class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg">
+                        查看完整行动清单
+                    </button>
+                    <button onclick="startCompliancePlan()" class="w-full py-4 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-lg shadow flex items-center justify-center gap-2">
+                        <span>🗺️</span> 生成完整合规路线图
+                    </button>
+                    <button onclick="shareResult()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                        分享给同事
+                    </button>
+                </div>
+
+                <div class="text-center mt-6 pt-6 border-t border-gray-100">
+                    <button onclick="resetCheck()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        重新测一次
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 完整清单页 -->
+        <div id="check-plan" class="hidden p-5">
+            <div class="flex items-center gap-2 mb-6">
+                <button onclick="backToResult()" class="text-gray-500 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold text-gray-800">完整行动清单</h2>
+            </div>
+
+            <div class="flex gap-2 mb-4 flex-wrap" id="plan-user-tags"></div>
+
+            <div class="bg-emerald-50 rounded-xl p-4 mb-6">
+                <p class="text-sm text-emerald-800 font-medium">💡 基于你的 <span id="plan-battery-type">EV电池</span></p>
+                <p class="text-xs text-emerald-600 mt-1">距离deadline还有 <span id="plan-days">180</span> 天</p>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-8 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                    <h3 class="font-bold text-gray-800">紧急（本周内）</h3>
+                </div>
+                <div id="urgent-tasks" class="space-y-2 ml-10"></div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                    <h3 class="font-bold text-gray-800">重要（本月内）</h3>
+                </div>
+                <div id="important-tasks" class="space-y-2 ml-10"></div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                    <h3 class="font-bold text-gray-800">持续跟进</h3>
+                </div>
+                <div id="ongoing-tasks" class="space-y-2 ml-10"></div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-4 mb-4">
+                <h4 class="font-bold text-gray-800 mb-2">相关工具</h4>
+                <div onclick="showPage('ai')" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 cursor-pointer">
+                    <span class="text-xl">🔍</span>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-800">合规透镜 AI咨询</p>
+                        <p class="text-xs text-gray-500">输入问题，三方会诊</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                <h4 class="font-bold text-gray-800 mb-2">参考资料</h4>
+                <a href="https://single-market-economy.ec.europa.eu/document/download/cd1e5e6c-4a4a-4b99-995a-49eb6916187e_en" target="_blank" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                    <span class="text-xl">📋</span>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-800">EU电池护照指南V2.0</p>
+                        <p class="text-xs text-gray-500">官方71项数据点文件</p>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="space-y-3 mb-8">
+                <button onclick="sharePlan()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                    </svg>
+                    分享这份清单
+                </button>
+                <button onclick="startCompliancePlanFromChecklist()" class="btn-primary w-full py-3 rounded-xl text-white font-bold text-lg shadow flex items-center justify-center gap-2">
+                    <span>🗺️</span> 升级为可追踪的7站计划
+                </button>
+                <p class="text-xs text-center text-gray-400">追踪每项任务进度，自动解锁下一站</p>
+            </div>
+
+            <div class="text-center pb-4">
+                <p class="text-xs text-gray-400">电池出海合规Lab 出品</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ AI咨询页面 ============ -->
+    <div id="page-ai" class="hidden" style="background: #f0f4f8; min-height: 100vh;">
+    <!-- 三方推演界面 -->
+    <div id="page-ai-tuiyan" class="min-h-screen flex flex-col">
     <div class="hero-bg text-white px-6 pt-14 pb-12 relative">
         <div class="relative z-10">
             <div class="flex items-center gap-3 mb-6">
@@ -292,18 +912,25 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
     </div>
 
     <!-- 次数提示栏 -->
-    <div id="quota-bar" class="px-5 pt-3 pb-1">
+            <!-- 返回首页 -->
+        <div class="px-5 pt-3 pb-1 flex items-center">
+            <button onclick="showPage('home')" class="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-600 transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                返回首页
+            </button>
+        </div>
+<div id="ai-quota-bar" class="px-5 pt-3 pb-1">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-xs text-gray-400 font-medium">今日免费额度</span>
-                <div class="flex items-center gap-1" id="quota-dots">
+                <div class="flex items-center gap-1" id="ai-quota-dots">
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                     <span class="w-2 h-2 rounded-full bg-green-500"></span>
                 </div>
-                <span class="text-xs font-bold text-green-600" id="quota-text">5/5</span>
+                <span class="text-xs font-bold text-green-600" id="ai-quota-text">5/5</span>
             </div>
             <span class="text-[10px] text-gray-300">每日0点重置</span>
         </div>
@@ -313,20 +940,20 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         <div class="card-elevated p-5">
             <label class="text-sm font-bold text-gray-800 block mb-2">你的合规困惑</label>
             <p class="text-xs text-gray-400 mb-3">输入一个具体的EU电池法执行问题</p>
-            <textarea id="user-question" rows="3"
+            <textarea id="ai-user-question" rows="3"
                 class="input-field"
                 placeholder="例如:供应商只给了行业平均数据,没有工厂具体数据,能不能先用着?"></textarea>
 
             <!-- 限额提示(条件渲染) -->
-            <div id="quota-hint" class="hidden mb-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2">
+            <div id="ai-quota-hint" class="hidden mb-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 <div>
-                    <p class="text-xs font-bold text-amber-700">今日额度仅剩 <span id="quota-remaining-hint">2</span> 次</p>
+                    <p class="text-xs font-bold text-amber-700">今日额度仅剩 <span id="ai-quota-remaining-hint">2</span> 次</p>
                     <p class="text-[10px] text-amber-500 mt-0.5">用完可明日再来,或后台留言获取体验额度</p>
                 </div>
             </div>
 
-            <button onclick="startDebate()" id="btn-start"
+            <button onclick="startDebate()" id="ai-btn-start"
                 class="btn-primary w-full text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <span>获取三方推演</span>
@@ -394,7 +1021,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
 </div>
 
 <!-- ====== 加载页 ====== -->
-<div id="page-loading" class="hidden min-h-screen flex flex-col items-center justify-center" style="background: #f0f4f8;">
+<div id="page-ai-loading" class="hidden min-h-screen flex flex-col items-center justify-center" style="background: #f0f4f8;">
     <div class="text-center px-6">
         <div class="flex justify-center gap-6 mb-10">
             <div class="relative">
@@ -423,20 +1050,20 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             </div>
         </div>
 
-        <h2 class="text-lg font-bold text-gray-800 mb-1" id="loading-title">正在分析</h2>
-        <p class="text-sm text-gray-400" id="loading-text">审计员正在审阅你的材料</p>
+        <h2 class="text-lg font-bold text-gray-800 mb-1" id="ai-loading-title">正在分析</h2>
+        <p class="text-sm text-gray-400" id="ai-loading-text">审计员正在审阅你的材料</p>
 
         <div class="mt-10 w-60 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
-            <div id="progress-bar" class="h-full rounded-full transition-all duration-700" style="width: 5%; background: #059669;"></div>
+            <div id="ai-progress-bar" class="h-full rounded-full transition-all duration-700" style="width: 5%; background: #059669;"></div>
         </div>
-        <p class="text-xs text-gray-400 mt-3 font-medium" id="loading-step">1/6 审计员分析中</p>
+        <p class="text-xs text-gray-400 mt-3 font-medium" id="ai-loading-step">1/6 审计员分析中</p>
     </div>
 </div>
 
 <!-- ====== 结果页 ====== -->
-<div id="page-result" class="hidden min-h-screen pb-28" style="background: #f0f4f8;">
+<div id="page-ai-result" class="hidden min-h-screen pb-28" style="background: #f0f4f8;">
     <div class="hero-bg text-white px-5 pt-12 pb-8 sticky top-0 z-30">
-        <button onclick="goHome()" class="text-white/50 text-sm mb-3 flex items-center gap-1.5 hover:text-white transition font-medium">
+        <button onclick="showPage('home')" class="text-white/50 text-sm mb-3 flex items-center gap-1.5 hover:text-white transition font-medium">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             返回首页
         </button>
@@ -444,10 +1071,10 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
             <div class="w-1.5 h-5 bg-green-400 rounded-full"></div>
             <h2 class="text-lg font-bold">分析结果</h2>
         </div>
-        <p class="text-white/50 text-sm mt-1 line-clamp-2 safe-text" id="result-question"></p>
+        <p class="text-white/50 text-sm mt-1 line-clamp-2 safe-text" id="ai-result-question"></p>
     </div>
 
-    <div class="px-4 -mt-3" id="result-container"></div>
+    <div class="px-4 -mt-3" id="ai-result-container"></div>
 
     <!-- 结果页免责声明 -->
     <div class="px-4 mt-2 mb-4">
@@ -459,12 +1086,12 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
 
     <!-- 底部操作栏 -->
     <div class="bottom-bar">
-        <button onclick="copyResult()"
+        <button onclick="copyAiResult()"
             class="btn-secondary flex-1 text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             <span>复制结果</span>
         </button>
-        <button onclick="showShareModal()"
+        <button onclick="showAiShareModal()"
             class="btn-primary flex-1 text-sm" style="box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             <span>分享卡片</span>
@@ -473,8 +1100,8 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
 </div>
 
 <!-- ====== 分享弹窗 ====== -->
-<div id="share-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeShareModal()">
-    <div class="share-card" id="share-card-element">
+<div id="ai-share-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeAiShareModal()">
+    <div class="share-card" id="ai-share-card-element">
         <div class="hero-bg text-white p-6 relative">
             <div class="flex items-center gap-3 mb-2">
                 <div class="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20">
@@ -489,7 +1116,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         </div>
         <div class="p-5">
             <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">合规困惑</p>
-            <p class="text-sm font-bold text-gray-800 mb-4 leading-snug safe-text" id="share-question">...</p>
+            <p class="text-sm font-bold text-gray-800 mb-4 leading-snug safe-text" id="ai-share-question">...</p>
 
             <div class="grid grid-cols-3 gap-2 mb-4">
                 <div class="bg-red-50 rounded-xl p-3 text-center border border-red-100">
@@ -497,27 +1124,27 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
                     <div class="text-[10px] text-red-600 font-bold">审计员</div>
-                    <div class="text-xs font-black mt-0.5" id="share-risk-audit" style="color:#dc2626">🔴</div>
+                    <div class="text-xs font-black mt-0.5" id="ai-share-risk-audit" style="color:#dc2626">🔴</div>
                 </div>
                 <div class="bg-blue-50 rounded-xl p-3 text-center border border-blue-100">
                     <div class="w-8 h-8 rounded-lg bg-blue-100 mx-auto mb-1.5 flex items-center justify-center">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </div>
                     <div class="text-[10px] text-blue-600 font-bold">法规顾问</div>
-                    <div class="text-xs font-black mt-0.5" id="share-risk-legal" style="color:#2563eb">🟡</div>
+                    <div class="text-xs font-black mt-0.5" id="ai-share-risk-legal" style="color:#2563eb">🟡</div>
                 </div>
                 <div class="bg-amber-50 rounded-xl p-3 text-center border border-amber-100">
                     <div class="w-8 h-8 rounded-lg bg-amber-100 mx-auto mb-1.5 flex items-center justify-center">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
                     </div>
                     <div class="text-[10px] text-amber-600 font-bold">下游客户</div>
-                    <div class="text-xs font-black mt-0.5" id="share-risk-market" style="color:#d97706">🔴</div>
+                    <div class="text-xs font-black mt-0.5" id="ai-share-risk-market" style="color:#d97706">🔴</div>
                 </div>
             </div>
 
             <div class="bg-gray-50 rounded-xl p-3.5 mb-4 border border-gray-100">
                 <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">核心决策路径</p>
-                <p class="text-xs text-gray-700 font-bold leading-relaxed safe-text" id="share-path">未生成决策路径</p>
+                <p class="text-xs text-gray-700 font-bold leading-relaxed safe-text" id="ai-share-path">未生成决策路径</p>
             </div>
 
             <div class="flex items-center justify-center gap-2 pt-2 border-t border-gray-100">
@@ -527,7 +1154,7 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
         </div>
     </div>
     <div class="absolute bottom-8 left-0 right-0 flex justify-center">
-        <button onclick="downloadShareCard()"
+        <button onclick="downloadAiShareCard()"
             class="bg-white text-gray-800 font-bold py-3 px-8 rounded-full shadow-2xl text-sm flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             保存图片
@@ -536,14 +1163,14 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
 </div>
 
 <!-- ====== 额度用完弹窗 ====== -->
-<div id="quota-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeQuotaModal()">
+<div id="ai-quota-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeAiQuotaModal()">
     <div class="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
         <div class="hero-bg p-6 text-white text-center relative">
             <div class="w-16 h-16 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center mx-auto mb-3">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
             </div>
             <h3 class="text-lg font-bold">今日额度已用完</h3>
-            <p class="text-white/60 text-xs mt-1">每日0点自动重置(剩余 <span id="quota-countdown">--:--:--</span>)</p>
+            <p class="text-white/60 text-xs mt-1">每日0点自动重置(剩余 <span id="ai-quota-countdown">--:--:--</span>)</p>
         </div>
         <div class="p-5">
             <div class="space-y-3">
@@ -558,18 +1185,975 @@ body { font-family: 'Noto Sans SC', sans-serif; background: #f0f4f8; }
                     <button onclick="copyWechatID()" class="px-3 py-1.5 bg-green-50 text-green-600 text-xs font-bold rounded-lg border border-green-200">复制</button>
                 </div>
             </div>
-            <button onclick="closeQuotaModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl">知道了,明天再来</button>
+            <button onclick="closeAiQuotaModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl">知道了,明天再来</button>
         </div>
     </div>
+
 </div>
 
-<div id="toast" class="toast"></div>
+    </div>
+    
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- ============ 7站合规计划页面 ============ -->
+    <div id="page-plan" class="hidden">
+        <!-- 7站总览 -->
+        <div id="plan-overview" class="p-5">
+            <div class="flex items-center gap-2 mb-4">
+                <button onclick="showPage('home')" class="text-gray-500 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                </button>
+                <h2 class="text-xl font-bold text-gray-800">完整合规计划</h2>
+            </div>
+
+            <div class="overall-progress rounded-xl p-4 text-white mb-5">
+                <div class="flex items-center justify-between mb-2">
+                    <div>
+                        <p class="text-xs text-gray-300">总体进度</p>
+                        <p class="text-2xl font-bold" id="plan-overall-percent">0%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-gray-300">已完成</p>
+                        <p class="text-xl font-bold"><span id="plan-completed-count">0</span>/<span id="plan-total-count">56</span></p>
+                    </div>
+                </div>
+                <div class="station-progress">
+                    <div class="station-progress-bar" id="plan-overall-bar" style="width: 0%"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">基于EU 2023/1542，7站56步完整路线</p>
+            </div>
+
+            <div class="flex gap-2 mb-4 flex-wrap" id="plan-overview-tags"></div>
+
+            <div class="space-y-3" id="stations-list"></div>
+
+            <div class="mt-6 text-center">
+                <button onclick="resetPlan()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    重置进度
+                </button>
+            </div>
+        </div>
+
+        <!-- 单站详情 -->
+        <div id="plan-station-detail" class="hidden">
+            <div class="p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <button onclick="showPage('home')" class="text-gray-500 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    </button>
+                    <button onclick="backToPlanOverview()" class="text-gray-500 p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-bold text-gray-800" id="station-detail-title">第1站</h2>
+                        <p class="text-xs text-gray-500" id="station-detail-subtitle">5/12 已完成</p>
+                    </div>
+                </div>
+                <div class="station-progress mb-4">
+                    <div class="station-progress-bar" id="station-detail-bar" style="width: 0%"></div>
+                </div>
+                <div class="space-y-2" id="station-tasks-list"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 <script>
+// ==================== 页面路由 ====================
+function showPage(page) {
+    ['home', 'check', 'ai', 'plan'].forEach(p => {
+        const el = document.getElementById('page-' + p);
+        if (el) el.classList.add('hidden');
+    console.log("hidden class added");
+    });
+    const target = document.getElementById('page-' + page);
+    if (target) target.classList.remove('hidden');
+    
+    // 页面切换逻辑
+    if (page === 'ai') { initTuiyan(); }
+    
+    if (page === 'ai') {
+        scrollToBottom();
+    } else if (page === 'plan') {
+        renderPlanOverview();
+    }
+}
+
+function quickAsk(question) {
+    showPage('ai');
+    setTimeout(() => { if (typeof setQuestion === 'function') { setQuestion(question); startDebate(); } }, 300);
+}
+
+// ==================== 自检状态 ====================
+let checkState = {
+    batteryType: null,
+    scale: null,
+    completedItems: [],
+    dimensions: {
+        carbon: { name: '碳足迹声明', score: 0, weight: 0.3 },
+        passport: { name: '电池护照', score: 0, weight: 0.25 },
+        recycling: { name: '回收材料', score: 0, weight: 0.2 },
+        diligence: { name: '尽责管理', score: 0, weight: 0.15 },
+        label: { name: 'CE标签', score: 0, weight: 0.1 }
+    }
+};
+
+
+const checklistConfig = {
+    ev: [
+        { id: 'carbon_1', dimension: 'carbon', text: '已完成碳足迹核算（知道CF值）' },
+        { id: 'carbon_2', dimension: 'carbon', text: '已生成碳足迹声明报告' },
+        { id: 'carbon_3', dimension: 'carbon', text: '已通过第三方机构审核（SGS/TÜV/CQC）' },
+        { id: 'passport_1', dimension: 'passport', text: '已梳理71项数据点适用性' },
+        { id: 'passport_2', dimension: 'passport', text: 'BMS已预留数据接口' },
+        { id: 'passport_3', dimension: 'passport', text: '已生成DPP数据包' },
+        { id: 'recycling_1', dimension: 'recycling', text: '已收集正极材料回收证明' },
+        { id: 'recycling_2', dimension: 'recycling', text: '已收集负极材料回收证明' },
+        { id: 'recycling_3', dimension: 'recycling', text: '供应商已签署回收料承诺书' },
+        { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
+        { id: 'diligence_2', dimension: 'diligence', text: '已完成供应商风险评估' },
+        { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' },
+        { id: 'label_2', dimension: 'label', text: '标签包含容量/化学成分信息' }
+    ],
+    industrial: [
+        { id: 'carbon_1', dimension: 'carbon', text: '已完成碳足迹核算（知道CF值）' },
+        { id: 'carbon_2', dimension: 'carbon', text: '已生成碳足迹声明报告' },
+        { id: 'passport_1', dimension: 'passport', text: '已梳理71项数据点适用性' },
+        { id: 'passport_2', dimension: 'passport', text: 'BMS已预留数据接口' },
+        { id: 'recycling_1', dimension: 'recycling', text: '已收集回收材料证明' },
+        { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
+        { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' }
+    ],
+    lmt: [
+        { id: 'passport_1', dimension: 'passport', text: '已了解电池护照要求（2030.2起）' },
+        { id: 'passport_2', dimension: 'passport', text: '产品标签符合可拆卸/可更换要求（2027.2起）' },
+        { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
+        { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' },
+        { id: 'label_2', dimension: 'label', text: '标签包含容量和化学物质信息' },
+        { id: 'carbon_1', dimension: 'carbon', text: '已了解LMT碳足迹申报时间表（2030.2起）' }
+    ],
+    storage: [
+        { id: 'carbon_1', dimension: 'carbon', text: '已完成碳足迹核算（知道CF值）' },
+        { id: 'carbon_2', dimension: 'carbon', text: '已生成碳足迹声明报告' },
+        { id: 'passport_1', dimension: 'passport', text: '已梳理71项数据点适用性' },
+        { id: 'recycling_1', dimension: 'recycling', text: '已收集回收材料证明' },
+        { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
+        { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' }
+    ]
+};
+
+const batteryTypeNames = { ev: 'EV动力电池', industrial: '工业电池', lmt: 'LMT电池', storage: '外部储能' };
+const scaleNames = { small: '3000万以下', medium: '3000万-1亿', large: '1亿-5亿', xlarge: '5亿以上' };
+
+// ==================== 自检步骤控制 ====================
+function goToCheckStep(step) {
+    [1, 2, 3].forEach(i => document.getElementById('check-step-' + i).classList.add('hidden'));
+    document.getElementById('check-result').classList.add('hidden');
+    document.getElementById('check-plan').classList.add('hidden');
+    document.getElementById('check-step-' + step).classList.remove('hidden');
+    
+    // 更新头部副标题 - 旧头部已删除，不再更新
+}
+
+function selectBatteryType(type, element) {
+    checkState.batteryType = type;
+    document.querySelectorAll('#check-step-1 .option-card').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    
+    // 更新头部
+    const label = document.getElementById('deadline-label'); // 旧头部已删除，label 可能不存在，不阻断
+    const count = document.getElementById('deadline-count');
+    if (label && type === 'ev') { label.textContent = '标签已强制'; if (count) count.textContent = '护照2027.2'; }
+    else if (label && type === 'lmt') { label.textContent = 'LMT剩余'; if (count) count.textContent = Math.ceil((new Date('2030-02-18') - new Date()) / 86400000) + '天'; }
+    else if (label) { label.textContent = '剩余'; if (count) count.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
+    
+    setTimeout(() => goToCheckStep(2), 300);
+}
+
+function selectScale(scale, element) {
+    checkState.scale = scale;
+    document.querySelectorAll('#check-step-2 .option-card').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    setTimeout(() => { renderChecklist(); goToCheckStep(3); }, 300);
+}
+
+function renderChecklist() {
+    const container = document.getElementById('checklist-container');
+    const items = checklistConfig[checkState.batteryType] || checklistConfig.ev;
+    const grouped = {};
+    items.forEach(item => { if (!grouped[item.dimension]) grouped[item.dimension] = []; grouped[item.dimension].push(item); });
+    
+    const dimensionNames = { carbon: '碳足迹声明', passport: '电池护照', recycling: '回收材料', diligence: '尽责管理', label: 'CE标签' };
+    let html = '';
+    Object.keys(grouped).forEach(dim => {
+        html += `<div class="mb-4"><h4 class="text-sm font-bold text-gray-700 mb-2">${dimensionNames[dim]}</h4>`;
+        grouped[dim].forEach(item => {
+            html += `<label class="option-card rounded-lg p-3 flex items-start gap-3 mb-2" id="label-${item.id}"><input type="checkbox" value="${item.id}" data-dimension="${item.dimension}" onchange="toggleItem(this)" class="mt-1 w-4 h-4 text-emerald-600 rounded"><span class="text-sm text-gray-700">${item.text}</span></label>`;
+        });
+        html += '</div>';
+    });
+    container.innerHTML = html;
+    checkState.completedItems = [];
+}
+
+function toggleItem(checkbox) {
+    const id = checkbox.value, dim = checkbox.dataset.dimension;
+    if (checkbox.checked) { checkState.completedItems.push({ id, dimension: dim }); checkbox.closest('label').classList.add('selected'); }
+    else { checkState.completedItems = checkState.completedItems.filter(item => item.id !== id); checkbox.closest('label').classList.remove('selected'); }
+}
+
+function checkAll(checked) {
+    const items = checklistConfig[checkState.batteryType] || checklistConfig.ev;
+    checkState.completedItems = checked ? items.map(i => ({ id: i.id, dimension: i.dimension })) : [];
+    document.querySelectorAll('#checklist-container input[type="checkbox"]').forEach(cb => {
+        cb.checked = checked;
+        const label = cb.closest('label');
+        if (checked) label.classList.add('selected'); else label.classList.remove('selected');
+    });
+}
+
+// ==================== 计算结果 ====================
+function calculateResult() {
+    const items = checklistConfig[checkState.batteryType] || checklistConfig.ev;
+    const dimCounts = {}, dimCompleted = {};
+    items.forEach(item => { if (!dimCounts[item.dimension]) { dimCounts[item.dimension] = 0; dimCompleted[item.dimension] = 0; } dimCounts[item.dimension]++; });
+    checkState.completedItems.forEach(item => { if (dimCompleted[item.dimension] !== undefined) dimCompleted[item.dimension]++; });
+    
+    let totalScore = 0, totalWeight = 0;
+    Object.keys(checkState.dimensions).forEach(dim => {
+        const count = dimCounts[dim] || 1, completed = dimCompleted[dim] || 0;
+        const score = count > 0 ? Math.round((completed / count) * 100) : 0;
+        checkState.dimensions[dim].score = score;
+        totalScore += score * checkState.dimensions[dim].weight;
+        totalWeight += checkState.dimensions[dim].weight;
+    });
+    const finalScore = Math.round(totalScore / totalWeight);
+    // 同行排名映射：完成度越高，排名越好（前X%数字越小越好）
+    let peerRank;
+    if (finalScore >= 90) peerRank = 10;
+    else if (finalScore >= 70) peerRank = 25;
+    else if (finalScore >= 50) peerRank = 45;
+    else if (finalScore >= 30) peerRank = 65;
+    else peerRank = 85;
+    
+    renderResult(finalScore, peerRank);
+    [1,2,3].forEach(i => document.getElementById('check-step-' + i).classList.add('hidden'));
+    document.getElementById('check-result').classList.remove('hidden');
+    document.getElementById('check-result').classList.add('fade-in');
+    setTimeout(() => drawRadarChart(), 100);
+}
+
+function renderResult(totalScore, peerRank) {
+    document.getElementById('user-tags').innerHTML = `
+        <span class="tag-pill bg-blue-100 text-blue-700">${batteryTypeNames[checkState.batteryType]}</span>
+        <span class="tag-pill bg-gray-100 text-gray-600">年出口${scaleNames[checkState.scale]}</span>`;
+    document.getElementById('total-score').textContent = totalScore + '%';
+    document.getElementById('peer-ranking').textContent = '前 ' + peerRank + '%';
+    
+    const ddlLabel = document.getElementById('result-deadline-label');
+    const daysLeftEl = document.getElementById('days-left');
+    if (checkState.batteryType === 'ev') { ddlLabel.textContent = 'EV护照截止'; daysLeftEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
+    else if (checkState.batteryType === 'lmt') { ddlLabel.textContent = 'LMT截止'; daysLeftEl.textContent = Math.ceil((new Date('2030-02-18') - new Date()) / 86400000) + '天'; }
+    else { ddlLabel.textContent = '剩余时间'; daysLeftEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
+    
+    const dimContainer = document.getElementById('dimension-details');
+    const dimConfig = [
+        { key: 'carbon', label: '碳足迹声明', color: 'bg-blue-500' },
+        { key: 'passport', label: '电池护照', color: 'bg-purple-500' },
+        { key: 'recycling', label: '回收材料', color: 'bg-green-500' },
+        { key: 'diligence', label: '尽责管理', color: 'bg-orange-500' },
+        { key: 'label', label: 'CE标签', color: 'bg-gray-500' }
+    ];
+    let dimHtml = '';
+    dimConfig.forEach(dim => {
+        const score = checkState.dimensions[dim.key].score;
+        dimHtml += `<div class="mb-3"><div class="flex justify-between text-sm mb-1"><span class="text-gray-700">${dim.label}</span><span class="font-bold ${score >= 60 ? 'text-emerald-600' : score >= 30 ? 'text-orange-500' : 'text-red-500'}">${score}%</span></div><div class="h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full ${dim.color} score-bar rounded-full" style="width: 0%" data-target="${score}"></div></div></div>`;
+    });
+    dimContainer.innerHTML = dimHtml;
+    setTimeout(() => document.querySelectorAll('.score-bar').forEach(bar => bar.style.width = bar.dataset.target + '%'), 200);
+    
+    const priorities = [];
+    if (checkState.dimensions.recycling.score < 30) priorities.push({ level: 'p0', text: '立即启动回收材料证明收集', desc: '供应商证明周期长，2027年前必须到位' });
+    if (checkState.dimensions.carbon.score < 50) priorities.push({ level: 'p0', text: '启动碳足迹核算', desc: 'EV电池已强制，工业电池2027.2截止' });
+    if (checkState.dimensions.passport.score < 40) priorities.push({ level: 'p1', text: '梳理电池护照71项数据点', desc: 'BMS改造需要6-12个月' });
+    if (checkState.dimensions.diligence.score < 50) priorities.push({ level: 'p1', text: '建立供应链尽责管理政策', desc: '2027.8起强制要求' });
+    if (checkState.dimensions.label.score < 100) priorities.push({ level: 'p2', text: '完善CE标签信息', desc: '确保包含容量和化学成分' });
+    if (priorities.length === 0) priorities.push({ level: 'p2', text: '持续监控法规更新', desc: '你已准备充分，保持关注即可' });
+    if (checkState.scale === 'xlarge' && priorities.some(p => p.level === 'p0')) priorities.unshift({ level: 'p0', text: '【头部企业建议】尽早启动Notified Body预审', desc: '年出口5亿+企业受监管关注度更高，建议比同行提前1-2个月' });
+    
+    document.getElementById('priority-list').innerHTML = priorities.map(p => `
+        <div class="flex items-start gap-3"><span class="priority-dot priority-${p.level} mt-1.5"></span><div><p class="text-sm font-medium text-gray-800">${p.text}</p><p class="text-xs text-gray-500">${p.desc}</p></div></div>
+    `).join('');
+    
+    // 添加AI咨询引导
+    document.getElementById('priority-list').insertAdjacentHTML('afterend', `
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-100 cursor-pointer" onclick="showPage('ai')">
+            <p class="text-sm text-blue-800 font-medium">💬 还有具体问题？AI 合规推演 →</p>
+            <p class="text-xs text-blue-600 mt-1">输入你的卡点，三方会诊给答案</p>
+        </div>
+    `);
+}
+
+function drawRadarChart() {
+    const canvas = document.getElementById('radarChart'), ctx = canvas.getContext('2d');
+    const size = 260, center = size / 2, radius = 85;
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = size * dpr; canvas.height = size * dpr;
+    ctx.scale(dpr, dpr); canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+    
+    const dims = ['carbon', 'passport', 'recycling', 'diligence', 'label'], labels = ['碳足迹', '护照', '回收', '尽责', '标签'];
+    
+    for (let i = 1; i <= 5; i++) {
+        ctx.beginPath(); ctx.strokeStyle = i === 5 ? '#e2e8f0' : '#f1f5f9'; ctx.lineWidth = 1;
+        for (let j = 0; j < 5; j++) { const angle = (Math.PI * 2 / 5) * j - Math.PI / 2, x = center + Math.cos(angle) * (radius * i / 5), y = center + Math.sin(angle) * (radius * i / 5); if (j === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.closePath(); ctx.stroke();
+    }
+    for (let i = 0; i < 5; i++) {
+        const angle = (Math.PI * 2 / 5) * i - Math.PI / 2;
+        ctx.beginPath(); ctx.strokeStyle = '#e2e8f0'; ctx.moveTo(center, center); ctx.lineTo(center + Math.cos(angle) * radius, center + Math.sin(angle) * radius); ctx.stroke();
+        ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(labels[i], center + Math.cos(angle) * (radius + 18), center + Math.sin(angle) * (radius + 18));
+    }
+    ctx.beginPath(); ctx.fillStyle = 'rgba(5, 150, 105, 0.2)'; ctx.strokeStyle = '#059669'; ctx.lineWidth = 2;
+    dims.forEach((dim, i) => {
+        const score = checkState.dimensions[dim].score, angle = (Math.PI * 2 / 5) * i - Math.PI / 2, r = (score / 100) * radius;
+        if (i === 0) ctx.moveTo(center + Math.cos(angle) * r, center + Math.sin(angle) * r);
+        else ctx.lineTo(center + Math.cos(angle) * r, center + Math.sin(angle) * r);
+        ctx.fillStyle = '#059669'; ctx.beginPath(); ctx.arc(center + Math.cos(angle) * r, center + Math.sin(angle) * r, 4, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.closePath(); ctx.fillStyle = 'rgba(5, 150, 105, 0.2)'; ctx.fill(); ctx.strokeStyle = '#059669'; ctx.stroke();
+}
+
+// ==================== 清单页 ====================
+function showFullPlan() {
+    document.getElementById('check-result').classList.add('hidden');
+    document.getElementById('check-plan').classList.remove('hidden');
+    document.getElementById('check-plan').classList.add('fade-in');
+    renderFullPlan();
+}
+
+function backToResult() {
+    document.getElementById('check-plan').classList.add('hidden');
+    document.getElementById('check-result').classList.remove('hidden');
+}
+
+function renderFullPlan() {
+    document.getElementById('plan-user-tags').innerHTML = `
+        <span class="tag-pill bg-blue-100 text-blue-700">${batteryTypeNames[checkState.batteryType]}</span>
+        <span class="tag-pill bg-gray-100 text-gray-600">年出口${scaleNames[checkState.scale]}</span>`;
+    document.getElementById('plan-battery-type').textContent = batteryTypeNames[checkState.batteryType] || '电池';
+    document.getElementById('plan-days').textContent = checkState.batteryType === 'lmt' 
+        ? Math.ceil((new Date('2030-02-18') - new Date()) / 86400000)
+        : Math.ceil((new Date('2027-02-18') - new Date()) / 86400000);
+    
+    const completedIds = new Set(checkState.completedItems.map(i => i.id));
+    
+    let urgentHtml = '';
+    if (checkState.dimensions.carbon.score < 50) urgentHtml += taskItem('red', (completedIds.has('carbon_1') ? '✅ ' : '⬜ ') + '启动碳足迹核算', '先算出现有CF值，才知道差多少', '本周');
+    if (checkState.dimensions.recycling.score < 30) urgentHtml += taskItem('red', (completedIds.has('recycling_1') ? '✅ ' : '⬜ ') + '发邮件给核心供应商', '询问回收料比例证明能力，标注能给/不能给/不确定', '3天内');
+    if (checkState.dimensions.passport.score < 40) urgentHtml += taskItem('red', (completedIds.has('passport_2') ? '✅ ' : '⬜ ') + '检查BMS数据接口', '确认是否预留了电池护照所需的数据采集能力', '本周');
+    document.getElementById('urgent-tasks').innerHTML = urgentHtml || '<p class="text-sm text-gray-500">🎉 暂无紧急事项，保持当前进度</p>';
+    
+    let importantHtml = '';
+    if (checkState.dimensions.carbon.score < 80 && !completedIds.has('carbon_2')) importantHtml += taskItem('orange', '⬜ 完善碳足迹数据', '补充BOM细节、确认排放因子版本、复核计算过程', '本月');
+    if (checkState.dimensions.passport.score < 70 && !completedIds.has('passport_1')) importantHtml += taskItem('orange', '⬜ 梳理71项数据点', '按EV/工业/LMT分类，标注哪些已有、哪些需补充', '本月');
+    if (checkState.dimensions.diligence.score < 60 && !completedIds.has('diligence_1')) importantHtml += taskItem('orange', '⬜ 建立尽责管理政策', '参考OECD指南，制定供应链风险评估流程', '本月');
+    document.getElementById('important-tasks').innerHTML = importantHtml || '<p class="text-sm text-gray-500">✅ 重要事项进展顺利</p>';
+    
+    let ongoingHtml = '';
+    ongoingHtml += taskItem('green', '⬜ 监控EU法规更新', '关注授权法案进展、阈值公布、DPP系统上线', '持续');
+    ongoingHtml += taskItem('green', '⬜ 内部数据留底', '所有排放因子截图保存，记录版本号，为审计做准备', '持续');
+    ongoingHtml += taskItem('green', '⬜ 同行对标', '关注同行业CF水平变化，确认相对位置', '每季度');
+    if (checkState.batteryType === 'ev') ongoingHtml += taskItem('green', '⬜ A-E标签合规', '2026.8.18起EV电池强制贴标，确认标签设计和位置合规', '持续');
+    document.getElementById('ongoing-tasks').innerHTML = ongoingHtml;
+}
+
+function taskItem(color, title, desc, time) {
+    const colors = { red: 'border-red-200 bg-red-50', orange: 'border-orange-200 bg-orange-50', green: 'border-green-200 bg-green-50' };
+    const opacity = title.startsWith('✅') ? 'opacity-60' : '';
+    return `<div class="p-3 rounded-lg border ${colors[color]} ${opacity}"><div class="flex items-start gap-2"><span class="text-sm font-bold text-gray-800 flex-1">${title}</span><span class="text-xs text-gray-500 whitespace-nowrap">${time}</span></div><p class="text-xs text-gray-600 mt-1">${desc}</p></div>`;
+}
+
+function resetCheck() {
+    checkState = {
+        batteryType: null, scale: null, completedItems: [],
+        dimensions: { carbon: { name: '碳足迹声明', score: 0, weight: 0.3 }, passport: { name: '电池护照', score: 0, weight: 0.25 }, recycling: { name: '回收材料', score: 0, weight: 0.2 }, diligence: { name: '尽责管理', score: 0, weight: 0.15 }, label: { name: 'CE标签', score: 0, weight: 0.1 } }
+    };
+    document.querySelectorAll('#check-step-1 .option-card, #check-step-2 .option-card, #checklist-container .option-card').forEach(el => el.classList.remove('selected'));
+    document.getElementById('check-result').classList.add('hidden');
+    document.getElementById('check-plan').classList.add('hidden');
+    goToCheckStep(1);
+    const ddlEl = document.getElementById('deadline-label'); if (ddlEl) ddlEl.textContent = '剩余';
+    const ddcEl = document.getElementById('deadline-count'); if (ddcEl) ddcEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天';
+}
+
+// ==================== 分享 ====================
+function shareResult() {
+    const typeName = batteryTypeNames[checkState.batteryType] || '电池';
+    const score = document.getElementById('total-score').textContent;
+    const rank = document.getElementById('peer-ranking').textContent;
+    let topPriority = '来测测你的EU合规进度';
+    if (checkState.dimensions.recycling.score < 30) topPriority = '最紧急：启动回收材料证明收集';
+    else if (checkState.dimensions.carbon.score < 50) topPriority = '最紧急：启动碳足迹核算';
+    else if (checkState.dimensions.passport.score < 40) topPriority = '最紧急：梳理电池护照71项数据点';
+    const text = `【${typeName} | EU合规自检】\n完成度：${score}\n同行排名：${rank}\n${topPriority}\n\n来测测你的：compliance-battery.com`;
+    doShare(text);
+}
+
+function sharePlan() {
+    const typeName = batteryTypeNames[checkState.batteryType] || '电池';
+    const score = document.getElementById('total-score').textContent;
+    const text = `【${typeName} | EU合规行动清单】\n完成度：${score}\n这是我的专属合规路线，分享给你\n\n来生成你的：compliance-battery.com`;
+    doShare(text);
+}
+
+function doShare(text) {
+    if (navigator.share) { navigator.share({ title: '电池EU合规健康度自检', text: text, url: 'https://compliance-battery.com' }); }
+    else { navigator.clipboard.writeText(text).then(() => alert('已复制到剪贴板，快去分享吧！')); }
+}
+
+// ==================== AI咨询 ====================
+const chatHistory = [];
+
+function scrollToBottom() {
+    const container = document.getElementById('chat-messages');
+    container.scrollTop = container.scrollHeight;
+}
+
+function sendPreset(text) {
+    document.getElementById('chat-input').value = text;
+    sendMessage();
+}
+
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // 添加用户消息
+    addMessage(text, 'user');
+    input.value = '';
+    chatHistory.push({ role: 'user', content: text });
+    
+    // 显示输入中
+    const typingId = addTyping();
+    scrollToBottom();
+    
+    try {
+        const response = await fetch('/api/debate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: text, history: chatHistory.slice(-5) })
+        });
+        
+        removeTyping(typingId);
+        
+        if (!response.ok) throw new Error('API error');
+        const data = await response.json();
+        
+        const aiReply = formatAIResponse(data);
+        addMessage(aiReply, 'ai');
+        chatHistory.push({ role: 'assistant', content: aiReply });
+    } catch (err) {
+        removeTyping(typingId);
+        const fallback = getFallbackResponse(text);
+        addMessage(fallback, 'ai');
+        chatHistory.push({ role: 'assistant', content: fallback });
+    }
+    
+    scrollToBottom();
+}
+
+function addMessage(text, type) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = 'flex gap-3 fade-in';
+    
+    if (type === 'user') {
+        div.innerHTML = `<div class="chat-bubble chat-user ml-auto">${escapeHtml(text)}</div>`;
+    } else {
+        div.innerHTML = `
+            <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-sm">🔍</span></div>
+            <div class="chat-bubble chat-ai">${text}</div>
+        `;
+    }
+    container.appendChild(div);
+}
+
+function addTyping() {
+    const container = document.getElementById('chat-messages');
+    const id = 'typing-' + Date.now();
+    const div = document.createElement('div');
+    div.id = id;
+    div.className = 'flex gap-3';
+    div.innerHTML = `
+        <div class="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0"><span class="text-sm">🔍</span></div>
+        <div class="chat-bubble chat-ai"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+    `;
+    container.appendChild(div);
+    scrollToBottom();
+    return id;
+}
+
+function removeTyping(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+}
+
+function formatAIResponse(data) {
+    // 如果后端返回结构化数据
+    if (data.calculator) {
+        return `<p class="font-medium mb-2">💡 核心结论</p><p class="mb-3">${data.calculator.decision || '基于现有信息分析如下：'}</p>
+                <p class="font-medium mb-2">🧭 行动建议</p><p>${(data.calculator.path || []).join('</p><p>')}</p>
+                <p class="text-xs text-gray-500 mt-3">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`;
+    }
+    // 如果后端返回文本
+    return escapeHtml(data.text || data.message || JSON.stringify(data)).replace(/\n/g, '<br>');
+}
+
+function getFallbackResponse(question) {
+    const responses = {
+        '国内认证能和国际互认吗？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3">目前<strong>不能完全互认</strong>，但存在数据兼容路径。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>国内认证（大湾区碳足迹标识）和EU认证（Notified Body审核）方法学不同</li>
+                <li>大湾区采用ISO 14067 + 本地化因子；EU采用JRC方法学 + EF3.0因子库</li>
+                <li>数据可以复用（BOM、能耗、运输数据），但需要按EU规则重新计算</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>国内认证机构提供EU辅助服务</strong> THEN 委托其做"双标"报告 → 🟢 省时省力</p>
+                <p>IF <strong>国内认证不做EU</strong> THEN 用国内数据包做基础，找SGS/TÜV补EU差分 → 🟡 需要额外费用</p>
+                <p>ELSE 从零开始按EU规则重做 → 🔴 成本最高，不建议</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+        
+        '国内申报和EU合规，哪个先跑？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3"><strong>建议先跑EU合规</strong>，国内申报可并行。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>EU合规有硬性deadline（2027.2.18），逾期=市场禁入</li>
+                <li>国内申报目前为自愿性/鼓励性，无强制处罚</li>
+                <li>EU合规数据包可以覆盖国内申报80%+的数据需求</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>2027年前必须出口EU</strong> THEN 优先EU合规，国内申报同步推进 → 🟢 最优策略</p>
+                <p>IF <strong>暂不出口EU，只做国内生意</strong> THEN 先跑国内申报，积累数据 → 🟡 为未来出海做准备</p>
+                <p>IF <strong>两边都要做但资源有限</strong> THEN EU合规优先，国内申报延后1-2季度 → 🔴 确保EU deadline不miss</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+        
+        '供应商不给特定数据怎么办？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3">三条路径：<strong>催、换、估</strong>，优先"催"。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>"催"：发正式函件，给明确deadline，抄送对方高管</li>
+                <li>"换"：启动备选供应商评估（至少2家）</li>
+                <li>"估"：用行业平均值替代，但报告需标注数据质量等级</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>供应商3个月内能给数据</strong> THEN 内部对标+持续催办 → 🟢 最优</p>
+                <p>IF <strong>供应商给不了但愿意配合</strong> THEN 提供填报模板，手把手教 → 🟡 需投入时间</p>
+                <p>IF <strong>供应商拒绝配合</strong> THEN 启动备选供应商+最坏情况估算 → 🔴 今天就开始</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+        
+        '碳抵消能算进声明吗？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3"><strong>不能。</strong>EU电池法明确禁止碳抵消计入CF值。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>EU 2023/1542第7条：碳足迹声明必须基于实际排放，不得使用碳抵消</li>
+                <li>买了绿证/碳汇？可以宣传ESG，但不能用来"降低"CF值</li>
+                <li>真正有效的降碳：换绿电、改工艺、轻量化设计</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>目前有碳抵消在CF计算中</strong> THEN 立即剔除，重新核算 → 🔴 今天做</p>
+                <p>IF <strong>CF值偏高想降碳</strong> THEN 评估屋顶光伏/绿电采购ROI → 🟡 本月启动</p>
+                <p>IF <strong>已买绿证想物尽其用</strong> THEN 用于ESG报告/品牌宣传，不用于CF → 🟢 合法用途</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+
+        '三年前的数据还能用吗？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3"><strong>可以，但有条件。</strong>EU要求数据反映"当前"生产状况。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>设备/工艺/供应商没变 → 三年前的数据可以继续用</li>
+                <li>换了设备/改了工艺/换了供应商 → 需要重新收集/验证</li>
+                <li>排放因子必须用最新版（国家因子库会更新）</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>生产工艺和供应商完全没变</strong> THEN 三年数据可用，更新排放因子版本即可 → 🟢 省时</p>
+                <p>IF <strong>工艺/供应商有变化</strong> THEN 变化部分重新测量，不变部分沿用 → 🟡 混合策略</p>
+                <p>IF <strong>无法确认是否有变化</strong> THEN 全部重新收集，避免审计风险 → 🔴 最保险</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+
+        '使用阶段排放要算吗？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3"><strong>不算。</strong>EU电池法碳足迹声明排除使用阶段。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>EU 2023/1542 系统边界：原材料→生产→分销→回收（排除使用阶段）</li>
+                <li>原因：使用阶段排放取决于用户行为（充电电网、使用习惯），制造商无法控制</li>
+                <li>但：回收阶段必须纳入计算</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>正在做全生命周期LCA</strong> THEN 使用阶段可以算（内部参考），但CF声明中剔除 → 🟢 双轨并行</p>
+                <p>IF <strong>只准备EU合规声明</strong> THEN 不需要收集使用阶段数据 → 🟡 省掉这块工作量</p>
+                <p>IF <strong>客户要求包含使用阶段</strong> THEN 单独做完整LCA报告，与CF声明分开 → 🔴 额外需求</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+
+        '多工厂数据能合并吗？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3"><strong>可以合并，但有限制条件。</strong></p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>EU要求：同一制造商、同一型号、同一生产流程可以合并</li>
+                <li>不同工厂如果工艺/设备/电网因子差异大，需分别计算后加权平均</li>
+                <li>合并后必须保留各工厂的原始数据备查</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>多工厂工艺/电网完全相同</strong> THEN 直接合并计算 → 🟢 最简单</p>
+                <p>IF <strong>工艺相同但电网不同</strong> THEN 分别算能耗排放，加权平均 → 🟡 需要加权</p>
+                <p>IF <strong>工艺/设备差异大</strong> THEN 分别出报告，或选择代表性工厂 → 🔴 不能简单合并</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`,
+
+        '电池护照71项数据点怎么准备？': `<p class="font-medium mb-2">💡 核心结论</p>
+            <p class="mb-3">71项看着多，<strong>真正难的是20项</strong>——需要供应商配合或BMS改造。</p>
+            <p class="font-medium mb-2">📖 详细分析</p>
+            <ul class="list-disc ml-4 mb-3 space-y-1">
+                <li>约30项企业内部已有（ERP/PLM数据整理即可）</li>
+                <li>约20项需要供应商配合（回收料证明、材料成分）</li>
+                <li>约10项需要BMS改造（实时容量、内阻数据）</li>
+                <li>约10项暂不填报（等授权法案出台）</li>
+            </ul>
+            <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+            <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+                <p>IF <strong>还没开始准备</strong> THEN 先用自检工具定位缺口 → 🔴 立即</p>
+                <p>IF <strong>已梳理但缺供应商数据</strong> THEN 发函+启动备选供应商评估 → 🟡 本周</p>
+                <p>IF <strong>BMS没预留数据接口</strong> THEN 联系BMS厂商评估改造周期（6-12个月） → 🟢 尽早</p>
+            </div>
+            <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`
+    };
+    
+    return responses[question] || `<p class="font-medium mb-2">💡 核心结论</p>
+        <p class="mb-3">这个问题涉及EU电池法具体条款，建议结合你的实际情况分析。</p>
+        <p class="font-medium mb-2">🧭 IF-THEN 决策路径</p>
+        <div class="bg-emerald-50 rounded-lg p-3 mb-3 space-y-2">
+            <p>IF <strong>你有具体场景描述</strong> THEN 告诉我电池类型/规模/当前卡点 → 🟢 我帮你拆解</p>
+            <p>IF <strong>不确定从哪开始</strong> THEN 先用上方"合规自检"功能 → 🟡 2分钟定位</p>
+            <p>ELSE 继续追问，我会持续补充分析 → 🔴 随时找我</p>
+        </div>
+        <p class="text-xs text-gray-500">⚠️ 以上基于截至2026年的公开信息，具体合规要求请以欧盟委员会最终实施法案为准。</p>`;
+}
+
+
+// ==================== 7站合规计划 ====================
+const STATIONS_CONFIG = [
+    {
+        id: 1, title: '确认产品分类', subtitle: '明确你的产品属于哪一类，适用什么法规',
+        tasks: [
+            { id: 's1_1', text: '确认电池类型（EV/工业/LMT/储能）', level: 'mandatory', ref: 'EU 2023/1542 Art.2-4' },
+            { id: 's1_2', text: '确认出口规模（年出口额区间）', level: 'suggested', ref: '合规风险评估最佳实践' },
+            { id: 's1_3', text: '确认适用法规版本（EU 2023/1542）', level: 'mandatory', ref: 'EU 2023/1542 全文' },
+            { id: 's1_4', text: '确认强制deadline日期', level: 'mandatory', ref: 'EU 2023/1542 Art.7/10/13' },
+            { id: 's1_5', text: '输出：我的合规时间线', level: 'suggested', ref: '项目管理最佳实践' }
+        ]
+    },
+    {
+        id: 2, title: '碳足迹声明', subtitle: '从BOM到CF报告，完成碳足迹核算',
+        tasks: [
+            { id: 's2_1', text: '组建CF核算团队/指定负责人', level: 'recommended', ref: 'EU 2023/1542 Art.7(1) - 要求"可靠"，需专人负责' },
+            { id: 's2_2', text: '收集BOM清单（前十大物料）', level: 'mandatory', ref: 'JRC方法学 4.2节 - 活动数据收集' },
+            { id: 's2_3', text: '确认排放因子版本（EF 3.0 / JRC方法学）', level: 'mandatory', ref: 'EU 2023/1542 Art.7(2) - 指定使用JRC方法学' },
+            { id: 's2_4', text: '收集能耗数据（电/气/水）', level: 'mandatory', ref: 'JRC方法学 4.3节 - 能耗活动数据' },
+            { id: 's2_5', text: '收集运输数据（原材料→工厂→客户）', level: 'mandatory', ref: 'JRC方法学 4.4节 - 分销阶段' },
+            { id: 's2_6', text: '选择LCA软件/工具', level: 'recommended', ref: 'ISO 14067 - 工具选择指南' },
+            { id: 's2_7', text: '计算摇篮到大门CF值', level: 'mandatory', ref: 'EU 2023/1542 Art.7(1) - 碳足迹声明义务' },
+            { id: 's2_8', text: '内部审核计算结果', level: 'recommended', ref: 'ISO 14067 8.3节 - 内部审核要求' },
+            { id: 's2_9', text: '生成碳足迹声明报告', level: 'mandatory', ref: 'EU 2023/1542 Art.7(1) - 报告格式要求' },
+            { id: 's2_10', text: '找Notified Body审核', level: 'mandatory', ref: 'EU 2023/1542 Art.15 - 合格评定程序' },
+            { id: 's2_11', text: '获取审核证书', level: 'mandatory', ref: 'EU 2023/1542 Art.15(3) - DoC声明' },
+            { id: 's2_12', text: '产品贴CE标签（含CF信息）', level: 'mandatory', ref: 'EU 2023/1542 Art.13 - 标签义务' }
+        ]
+    },
+    {
+        id: 3, title: '电池护照', subtitle: '71项数据点，从梳理到DPP上线',
+        tasks: [
+            { id: 's3_1', text: '梳理71项数据点适用性（哪些必填）', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 71项数据点清单' },
+            { id: 's3_2', text: '评估BMS数据接口能力', level: 'recommended', ref: 'EU 2023/1542 Art.77 - 要求"可访问"，BMS是主流技术路径' },
+            { id: 's3_3', text: '联系BMS厂商确认改造方案', level: 'recommended', ref: '技术实施最佳实践 - 改造周期6-12个月' },
+            { id: 's3_4', text: '收集静态数据（ERP/PLM导出）', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 静态数据要求' },
+            { id: 's3_5', text: '收集动态数据需求（容量/内阻/温度）', level: 'recommended', ref: 'EU电池护照指南V2.0 - 动态数据建议项' },
+            { id: 's3_6', text: '建立数据字典（字段定义）', level: 'recommended', ref: 'CIRPASS标准 - 数据标准化要求' },
+            { id: 's3_7', text: '开发/采购DPP数据包生成工具', level: 'recommended', ref: 'CIRPASS标准 - DPP数据格式（JSON/XML）' },
+            { id: 's3_8', text: '与供应商签署数据共享协议', level: 'mandatory', ref: 'EU 2023/1542 Art.48 - 供应链透明度要求' },
+            { id: 's3_9', text: '收集回收料比例证明', level: 'mandatory', ref: 'EU 2023/1542 Art.8 - 回收料披露义务' },
+            { id: 's3_10', text: '收集材料成分声明', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 材料成分必填项' },
+            { id: 's3_11', text: '生成DPP数据包（JSON/XML）', level: 'mandatory', ref: 'EU 2023/1542 Art.77 - 护照数据格式' },
+            { id: 's3_12', text: '内部测试数据包完整性', level: 'recommended', ref: '质量管控最佳实践' },
+            { id: 's3_13', text: '注册DPP系统账号', level: 'mandatory', ref: 'EU 2023/1542 Art.77(4) - 注册义务' },
+            { id: 's3_14', text: '上传数据包到DPP系统', level: 'mandatory', ref: 'EU 2023/1542 Art.77(4) - 上传义务' },
+            { id: 's3_15', text: '生成电池护照二维码', level: 'mandatory', ref: 'EU 2023/1542 Art.77(5) - 二维码访问要求' }
+        ]
+    },
+    {
+        id: 4, title: '回收材料', subtitle: '收集证明，满足回收料比例要求',
+        tasks: [
+            { id: 's4_1', text: '确认正极材料回收比例要求', level: 'mandatory', ref: 'EU 2023/1542 Art.8(1) - 钴≥12%/锂≥4%/镍≥4%' },
+            { id: 's4_2', text: '发函给正极供应商索要回收证明', level: 'recommended', ref: 'EU 2023/1542 Art.8 - 证明可追溯性' },
+            { id: 's4_3', text: '确认负极材料回收比例要求', level: 'mandatory', ref: 'EU 2023/1542 Art.8(1) - 石墨回收要求' },
+            { id: 's4_4', text: '发函给负极供应商索要回收证明', level: 'recommended', ref: 'EU 2023/1542 Art.8 - 证明可追溯性' },
+            { id: 's4_5', text: '建立回收料追踪台账', level: 'recommended', ref: 'EU 2023/1542 Art.8 - 记录保存义务' },
+            { id: 's4_6', text: '评估供应商回收能力（备选方案）', level: 'suggested', ref: '风险管理最佳实践 - 供应链韧性' },
+            { id: 's4_7', text: '签署回收料承诺书', level: 'recommended', ref: 'EU 2023/1542 Art.8 - 供应链合规证明' },
+            { id: 's4_8', text: '定期更新回收比例数据', level: 'mandatory', ref: 'EU 2023/1542 Art.8 - 持续合规义务' }
+        ]
+    },
+    {
+        id: 5, title: '尽责管理', subtitle: '建立供应链风险评估和管控体系',
+        tasks: [
+            { id: 's5_1', text: '制定供应链尽责管理政策', level: 'mandatory', ref: 'EU 2023/1542 Art.48(1) - 政策制定义务' },
+            { id: 's5_2', text: '建立供应商风险评估框架', level: 'mandatory', ref: 'OECD尽责管理指南 Step1 - 建立强有力管理体系' },
+            { id: 's5_3', text: '对所有供应商进行风险评级', level: 'mandatory', ref: 'OECD尽责管理指南 Step2 - 识别和评估风险' },
+            { id: 's5_4', text: '高风险供应商现场审核', level: 'recommended', ref: 'OECD尽责管理指南 Step3 - 对识别的风险作出回应' },
+            { id: 's5_5', text: '建立申诉机制', level: 'mandatory', ref: 'OECD尽责管理指南 Step4 - 建立申诉机制' },
+            { id: 's5_6', text: '培训采购/质量团队', level: 'suggested', ref: 'OECD尽责管理指南 - 能力建设建议' },
+            { id: 's5_7', text: '年度尽责管理报告', level: 'recommended', ref: 'OECD尽责管理指南 Step5 - 公开报告' },
+            { id: 's5_8', text: '持续监控和更新', level: 'mandatory', ref: 'EU 2023/1542 Art.48 - 持续监控义务' }
+        ]
+    },
+    {
+        id: 6, title: 'CE标签', subtitle: '确保产品标签符合EU要求',
+        tasks: [
+            { id: 's6_1', text: '确认标签内容要求（容量/化学成分/回收料比例）', level: 'mandatory', ref: 'EU 2023/1542 Art.13 + 实施条例' },
+            { id: 's6_2', text: '设计标签版式', level: 'recommended', ref: '实施条例 - 标签格式规范' },
+            { id: 's6_3', text: '确认标签贴附位置', level: 'mandatory', ref: 'EU 2023/1542 Art.13(2) - 可见性要求' },
+            { id: 's6_4', text: '批量打印/贴标', level: 'mandatory', ref: 'EU 2023/1542 Art.13(1) - 每块电池须贴标' },
+            { id: 's6_5', text: '标签合规性检查', level: 'recommended', ref: '质量管控最佳实践' }
+        ]
+    },
+    {
+        id: 7, title: '持续合规', subtitle: '建立长效机制，确保持续满足法规',
+        tasks: [
+            { id: 's7_1', text: '建立年度CF复算机制', level: 'recommended', ref: 'EU 2023/1542 Art.7 - "当前"CF要求，推断至少年度更新' },
+            { id: 's7_2', text: '监控法规更新（授权法案进展）', level: 'mandatory', ref: 'EU 2023/1542 Art.89 - 委员会授权立法权' },
+            { id: 's7_3', text: '定期内部审计', level: 'recommended', ref: 'ISO 14067 8.3 - 周期性审核建议' }
+        ]
+    }
+];
+
+let planState = loadPlanProgress();
+
+function loadPlanProgress() {
+    try {
+        const saved = localStorage.getItem('compliancePlan');
+        if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return {
+        batteryType: null, scale: null,
+        completedTasks: [], currentStation: 1
+    };
+}
+
+function savePlanProgress() {
+    localStorage.setItem('compliancePlan', JSON.stringify(planState));
+}
+
+function startCompliancePlan() {
+    // 从自检数据带入
+    if (checkState.batteryType) {
+        planState.batteryType = checkState.batteryType;
+        planState.scale = checkState.scale;
+    }
+    // 把自检已完成的项映射到7站任务
+    const mapping = {
+        'carbon_1': 's2_7', 'carbon_2': 's2_9', 'carbon_3': 's2_11',
+        'passport_1': 's3_1', 'passport_2': 's3_2', 'passport_3': 's3_11',
+        'recycling_1': 's4_2', 'recycling_2': 's4_4', 'recycling_3': 's4_7',
+        'diligence_1': 's5_1', 'diligence_2': 's5_3',
+        'label_1': 's6_4', 'label_2': 's6_5'
+    };
+    checkState.completedItems.forEach(item => {
+        const mapped = mapping[item.id];
+        if (mapped && !planState.completedTasks.includes(mapped)) {
+            planState.completedTasks.push(mapped);
+        }
+    });
+    savePlanProgress();
+    showPage('plan');
+}
+
+function startCompliancePlanFromChecklist() {
+    // 和 startCompliancePlan 一样，但从 check-plan 页面调用
+    startCompliancePlan();
+}
+
+function renderPlanOverview() {
+    // 标签
+    const tagsEl = document.getElementById('plan-overview-tags');
+    if (planState.batteryType) {
+        tagsEl.innerHTML = `
+            <span class="tag-pill bg-blue-100 text-blue-700">${batteryTypeNames[planState.batteryType]}</span>
+            <span class="tag-pill bg-gray-100 text-gray-600">年出口${scaleNames[planState.scale] || '未选'}</span>`;
+    } else {
+        tagsEl.innerHTML = '<span class="tag-pill bg-orange-100 text-orange-600">请先完成自检以带入数据</span>';
+    }
+    
+    // 如果没带数据，显示引导
+    const stationsList = document.getElementById('stations-list');
+    if (!planState.batteryType) {
+        stationsList.insertAdjacentHTML('beforebegin', `
+            <div id="plan-selfcheck-guide" class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
+                <p class="text-sm text-orange-800 font-medium">💡 先做2分钟自检，自动带入你的电池类型和合规进度</p>
+                <button onclick="showPage('check')" class="mt-2 text-sm bg-orange-500 text-white px-4 py-2 rounded-lg font-medium">去自检</button>
+            </div>
+        `);
+    } else {
+        const guide = document.getElementById('plan-selfcheck-guide');
+        if (guide) guide.remove();
+    }
+
+    // 计算总体进度
+    let totalTasks = 0, completed = 0;
+    STATIONS_CONFIG.forEach(s => {
+        totalTasks += s.tasks.length;
+        s.tasks.forEach(t => {
+            if (planState.completedTasks.includes(t.id)) completed++;
+        });
+    });
+    const percent = totalTasks > 0 ? Math.round((completed / totalTasks) * 100) : 0;
+    document.getElementById('plan-overall-percent').textContent = percent + '%';
+    document.getElementById('plan-completed-count').textContent = completed;
+    document.getElementById('plan-total-count').textContent = totalTasks;
+    document.getElementById('plan-overall-bar').style.width = percent + '%';
+
+    // 渲染各站卡片
+    let html = '';
+    STATIONS_CONFIG.forEach((station, idx) => {
+        const stationCompleted = station.tasks.filter(t => planState.completedTasks.includes(t.id)).length;
+        const stationPercent = Math.round((stationCompleted / station.tasks.length) * 100);
+        const mandatoryCount = station.tasks.filter(t => t.level === 'mandatory').length;
+        const recommendedCount = station.tasks.filter(t => t.level === 'recommended').length;
+        const suggestedCount = station.tasks.filter(t => t.level === 'suggested').length;
+        const isLocked = idx > 0 && !isStationCompleted(STATIONS_CONFIG[idx - 1]);
+        const isCompleted = stationCompleted === station.tasks.length;
+        const statusClass = isLocked ? 'locked' : isCompleted ? 'completed' : 'active';
+        const statusIcon = isCompleted ? '✅' : isLocked ? '🔒' : (idx + 1);
+        const btnText = isLocked ? '请先完成上一站' : isCompleted ? '已完成' : '继续';
+
+        html += `
+        <div class="station-card ${statusClass} rounded-2xl p-4 cursor-pointer" onclick="${isLocked ? '' : `openStation(${station.id})`}">
+            <div class="flex items-center gap-3">
+                <div class="station-number ${isCompleted ? 'done' : isLocked ? 'locked' : 'active'}">${statusIcon}</div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">第${station.id}站：${station.title}</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">${station.subtitle}</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="station-progress flex-1">
+                            <div class="station-progress-bar" style="width: ${stationPercent}%"></div>
+                        </div>
+                        <span class="text-xs text-gray-500">${stationCompleted}/${station.tasks.length}</span>
+                    </div>
+                    <div class="flex gap-1 mt-2">
+                        ${mandatoryCount > 0 ? `<span class="text-[10px] px-1.5 py-0.5 rounded text-red-600 bg-red-50">🔴 强制 ${mandatoryCount}项</span>` : ''}
+                        ${recommendedCount > 0 ? `<span class="text-[10px] px-1.5 py-0.5 rounded text-amber-600 bg-amber-50">🟡 推荐 ${recommendedCount}项</span>` : ''}
+                        ${suggestedCount > 0 ? `<span class="text-[10px] px-1.5 py-0.5 rounded text-emerald-600 bg-emerald-50">🟢 建议 ${suggestedCount}项</span>` : ''}
+                    </div>
+                </div>
+                <span class="text-xs font-medium ${isLocked ? 'text-gray-400' : isCompleted ? 'text-emerald-600' : 'text-purple-600'}">${btnText}</span>
+            </div>
+        </div>`;
+    });
+    document.getElementById('stations-list').innerHTML = html;
+}
+
+function isStationCompleted(station) {
+    return station.tasks.every(t => planState.completedTasks.includes(t.id));
+}
+
+function openStation(stationId) {
+    const station = STATIONS_CONFIG.find(s => s.id === stationId);
+    if (!station) return;
+    planState.currentStation = stationId;
+    savePlanProgress();
+
+    document.getElementById('plan-overview').classList.add('hidden');
+    document.getElementById('plan-station-detail').classList.remove('hidden');
+
+    document.getElementById('station-detail-title').textContent = `第${station.id}站：${station.title}`;
+    const completed = station.tasks.filter(t => planState.completedTasks.includes(t.id)).length;
+    document.getElementById('station-detail-subtitle').textContent = `${completed}/${station.tasks.length} 已完成`;
+    document.getElementById('station-detail-bar').style.width = Math.round((completed / station.tasks.length) * 100) + '%';
+
+    let html = '';
+    const levelLabels = { mandatory: '🔴 强制', recommended: '🟡 推荐', suggested: '🟢 建议' };
+    const levelColors = { mandatory: 'text-red-600 bg-red-50', recommended: 'text-amber-600 bg-amber-50', suggested: 'text-emerald-600 bg-emerald-50' };
+    station.tasks.forEach((task, idx) => {
+        const isDone = planState.completedTasks.includes(task.id);
+        html += `
+        <div class="task-item ${isDone ? 'completed' : ''} rounded-xl p-3 border border-gray-100 flex items-start gap-3 cursor-pointer" onclick="toggleTask('${task.id}')">
+            <div class="w-5 h-5 rounded border-2 ${isDone ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'} flex items-center justify-center flex-shrink-0 mt-0.5">
+                ${isDone ? '<svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm ${isDone ? 'text-gray-400 line-through' : 'text-gray-800'} font-medium">${task.text}</p>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                    <span class="text-[10px] px-1.5 py-0.5 rounded ${levelColors[task.level]}">${levelLabels[task.level]}</span>
+                    <span class="text-[10px] text-gray-400 truncate">📋 ${task.ref}</span>
+                </div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('station-tasks-list').innerHTML = html;
+}
+
+function toggleTask(taskId) {
+    const idx = planState.completedTasks.indexOf(taskId);
+    if (idx > -1) {
+        planState.completedTasks.splice(idx, 1);
+    } else {
+        planState.completedTasks.push(taskId);
+    }
+    savePlanProgress();
+    openStation(planState.currentStation);
+}
+
+function backToPlanOverview() {
+    document.getElementById('plan-station-detail').classList.add('hidden');
+    document.getElementById('plan-overview').classList.remove('hidden');
+    renderPlanOverview();
+}
+
+function resetPlan() {
+    if (!confirm('确定要重置所有进度吗？')) return;
+    planState = { batteryType: null, scale: null, completedTasks: [], currentStation: 1 };
+    localStorage.removeItem('compliancePlan');
+    renderPlanOverview();
+}
+
+// ==================== 初始化 ====================
+(function init() {
+    const daysLeft = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000);
+    const ddcEl2 = document.getElementById('deadline-count'); if (ddcEl2) ddcEl2.textContent = daysLeft + '天';
+    // 加载计划进度（静默）
+    planState = loadPlanProgress();
+})();
+</script>
+
+<!-- ====== 三方推演引擎 (from MVP v0.4.0+) ====== -->
+<script>
+
 // ====== 配置 ======
-const API_KEY = 'sk-fced7a8010be4d89afb224a046335b9c';
-const API_URL = 'https://api.deepseek.com/chat/completions';
+const API_URL = '/api/debate';  // 走后端代理，隐藏 API Key
 let currentQuestion = '';
 let currentResult = {};
 let isLoading = false;
@@ -621,7 +2205,7 @@ const DEMO_DATA = {
 
 // ====== 导航 ======
 function setQuestion(q) {
-    document.getElementById('user-question').value = q;
+    document.getElementById('ai-user-question').value = q;
     trackEvent('click_preset', { question_preview: q.substring(0, 30) });
 }
 
@@ -630,15 +2214,15 @@ function setQuestionAndGo(q) {
     startDebate();
 }
 
-function goHome() {
-    hideAll();
-    document.getElementById('page-home').classList.remove('hidden');
-    document.getElementById('user-question').value = '';
+function goTuiyanHome() {
+    hideTuiyanAll();
+    document.getElementById('page-ai-tuiyan').classList.remove('hidden');
+    document.getElementById('ai-user-question').value = '';
     updateQuotaUI();
 }
 
-function hideAll() {
-    ['page-home', 'page-loading', 'page-result'].forEach(id => {
+function hideTuiyanAll() {
+    ['page-ai-tuiyan', 'page-ai-loading', 'page-ai-result'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
 }
@@ -711,10 +2295,10 @@ function consumeQuota() {
 
 function updateQuotaUI() {
     const status = getQuotaStatus();
-    const dots = document.getElementById('quota-dots');
-    const text = document.getElementById('quota-text');
-    const hint = document.getElementById('quota-hint');
-    const hintNum = document.getElementById('quota-remaining-hint');
+    const dots = document.getElementById('ai-quota-dots');
+    const text = document.getElementById('ai-quota-text');
+    const hint = document.getElementById('ai-quota-hint');
+    const hintNum = document.getElementById('ai-quota-remaining-hint');
 
     if (dots) {
         dots.innerHTML = '';
@@ -742,7 +2326,7 @@ function updateQuotaUI() {
         }
     }
 
-    const btn = document.getElementById('btn-start');
+    const btn = document.getElementById('ai-btn-start');
     if (btn) {
         if (status.remaining === 0) {
             btn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -754,16 +2338,18 @@ function updateQuotaUI() {
     }
 }
 
-function showQuotaModal() {
-    document.getElementById('quota-modal').classList.remove('hidden');
+function showAiQuotaModal() {
+    document.getElementById('ai-quota-modal').classList.remove('hidden');
     updateCountdown();
     if (!window.quotaTimer) {
         window.quotaTimer = setInterval(updateCountdown, 1000);
     }
 }
 
-function closeQuotaModal() {
-    document.getElementById('quota-modal').classList.add('hidden');
+function closeAiQuotaModal() {
+    showPage('home');
+    var el = document.getElementById('ai-quota-modal');
+    document.getElementById('ai-quota-modal').classList.add('hidden');
     if (window.quotaTimer) {
         clearInterval(window.quotaTimer);
         window.quotaTimer = null;
@@ -780,7 +2366,7 @@ function updateCountdown() {
     const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
     const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
 
-    const el = document.getElementById('quota-countdown');
+    const el = document.getElementById('ai-quota-countdown');
     if (el) el.textContent = `${h}:${m}:${s}`;
 }
 
@@ -794,7 +2380,7 @@ function copyWechatID() {
 }
 
 // 初始化
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('tuiyan-init', async () => {
     // 清理旧版本遗留数据
     localStorage.removeItem('usage_limit');
     await getUserIP();
@@ -812,7 +2398,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         const input = document.getElementById('follow-up-input');
         question = input ? input.value.trim() : '';
     } else {
-        question = document.getElementById('user-question').value.trim();
+        question = document.getElementById('ai-user-question').value.trim();
     }
 
     // 先检查输入
@@ -825,7 +2411,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
     if (!isDemo) {
         const status = getQuotaStatus();
         if (status.remaining <= 0) {
-            showQuotaModal();
+            showAiQuotaModal();
             return;
         }
         consumeQuota();
@@ -841,7 +2427,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
 
     currentQuestion = question;
     isLoading = true;
-    showLoading();
+    showTuiyanLoading();
 
     const followUpRaw = localStorage.getItem('follow_up');
     const followUp = followUpRaw ? JSON.parse(followUpRaw) : null;
@@ -854,7 +2440,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
             await simulateLoading();
             currentResult = DEMO_DATA;
             localStorage.removeItem('follow_up');
-            showResult();
+            showTuiyanResult();
             return;
         }
 
@@ -881,8 +2467,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + API_KEY
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 model: 'deepseek-chat',
@@ -901,7 +2486,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         currentResult = parseResponse(data.choices[0].message.content);
         localStorage.removeItem('follow_up');
         trackEvent('api_success', { question_preview: currentQuestion.substring(0, 30) });
-        showResult();
+        showTuiyanResult();
 
     } catch (err) {
         clearTimeout(timeoutId);
@@ -930,7 +2515,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
 
         await simulateLoading();
         currentResult = DEMO_DATA;
-        showResult();
+        showTuiyanResult();
 
     } finally {
         isLoading = false;
@@ -956,16 +2541,16 @@ function simulateLoading() {
     });
 }
 
-function showLoading() {
-    hideAll();
-    document.getElementById('page-loading').classList.remove('hidden');
-    document.getElementById('progress-bar').style.width = '5%';
+function showTuiyanLoading() {
+    hideTuiyanAll();
+    document.getElementById('page-ai-loading').classList.remove('hidden');
+    document.getElementById('ai-progress-bar').style.width = '5%';
 }
 
 function updateLoading(text, progress, step) {
-    document.getElementById('loading-text').textContent = text;
-    document.getElementById('progress-bar').style.width = progress + '%';
-    document.getElementById('loading-step').textContent = step;
+    document.getElementById('ai-loading-text').textContent = text;
+    document.getElementById('ai-progress-bar').style.width = progress + '%';
+    document.getElementById('ai-loading-step').textContent = step;
 }
 
 function parseResponse(text) {
@@ -985,12 +2570,12 @@ function parseResponse(text) {
 }
 
 // ====== 渲染结果 ======
-function showResult() {
-    hideAll();
-    document.getElementById('page-result').classList.remove('hidden');
-    document.getElementById('result-question').textContent = currentQuestion;
+function showTuiyanResult() {
+    hideTuiyanAll();
+    document.getElementById('page-ai-result').classList.remove('hidden');
+    document.getElementById('ai-result-question').textContent = currentQuestion;
 
-    const container = document.getElementById('result-container');
+    const container = document.getElementById('ai-result-container');
     container.innerHTML = '';
 
     // 1. 关键摘要
@@ -1366,13 +2951,13 @@ function formatText(text) {
 }
 
 // ====== 分享功能 ======
-function showShareModal() {
-    document.getElementById('share-question').textContent = currentQuestion;
-    if (currentResult.auditor) document.getElementById('share-risk-audit').textContent = currentResult.auditor.risk;
-    if (currentResult.legal) document.getElementById('share-risk-legal').textContent = currentResult.legal.risk;
-    if (currentResult.market) document.getElementById('share-risk-market').textContent = currentResult.market.risk;
+function showAiShareModal() {
+    document.getElementById('ai-share-question').textContent = currentQuestion;
+    if (currentResult.auditor) document.getElementById('ai-share-risk-audit').textContent = currentResult.auditor.risk;
+    if (currentResult.legal) document.getElementById('ai-share-risk-legal').textContent = currentResult.legal.risk;
+    if (currentResult.market) document.getElementById('ai-share-risk-market').textContent = currentResult.market.risk;
 
-    const pathEl = document.getElementById('share-path');
+    const pathEl = document.getElementById('ai-share-path');
     if (currentResult.calculator?.paths?.[0]) {
         const p = currentResult.calculator.paths[0];
         pathEl.textContent = `如果${p.condition},那么${p.action}`;
@@ -1380,15 +2965,15 @@ function showShareModal() {
         pathEl.textContent = '未生成决策路径';
     }
 
-    document.getElementById('share-modal').classList.remove('hidden');
+    document.getElementById('ai-share-modal').classList.remove('hidden');
 }
 
-function closeShareModal() {
-    document.getElementById('share-modal').classList.add('hidden');
+function closeAiShareModal() {
+    document.getElementById('ai-share-modal').classList.add('hidden');
 }
 
-async function downloadShareCard() {
-    const element = document.getElementById('share-card-element');
+async function downloadAiShareCard() {
+    const element = document.getElementById('ai-share-card-element');
     try {
         const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
         const link = document.createElement('a');
@@ -1403,7 +2988,7 @@ async function downloadShareCard() {
     }
 }
 
-function copyResult() {
+function copyAiResult() {
     const text = generateCopyText();
 
     if (navigator.clipboard && window.isSecureContext) {
@@ -1535,6 +3120,22 @@ const SYSTEM_PROMPT = `你是「合规透镜」多角色决策引擎,专门处�
 - 所有字段必须填满,不得留空。
 - 如果你在 paths 中涉及推测性阈值,必须在 condition 或 action 中明确标注【基于趋势推测】。
 - 如果信息不足无法给出 paths,则在 paths 中只输出一条通用路径,并在 missing_data 中列出所需数据。`;
+
 </script>
+
+
+<script>
+// 三方推演初始化钩子
+function initTuiyan() {
+    // 触发自定义事件来初始化三方推演
+    document.dispatchEvent(new Event('tuiyan-init'));
+    // 显示三方推演首页
+    if (typeof hideTuiyanAll === 'function') {
+        hideTuiyanAll();
+        document.getElementById('page-ai-tuiyan').classList.remove('hidden');
+    }
+}
+</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
 </html>
