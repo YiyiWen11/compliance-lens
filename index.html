@@ -940,7 +940,7 @@
         <div class="card-elevated p-5">
             <label class="text-sm font-bold text-gray-800 block mb-2">你的合规困惑</label>
             <p class="text-xs text-gray-400 mb-3">输入一个具体的EU电池法执行问题</p>
-            <textarea id="ai-user-question" rows="3"
+            <textarea id="ai-user-question" rows="3" maxlength="500"
                 class="input-field"
                 placeholder="例如:供应商只给了行业平均数据,没有工厂具体数据,能不能先用着?"></textarea>
 
@@ -1265,12 +1265,20 @@ function showPage(page) {
     ['home', 'check', 'ai', 'plan'].forEach(p => {
         const el = document.getElementById('page-' + p);
         if (el) el.classList.add('hidden');
-    console.log("hidden class added");
     });
     const target = document.getElementById('page-' + page);
     if (target) target.classList.remove('hidden');
     
-    // 页面切换逻辑
+    window.scrollTo(0, 0);
+    
+    const subtitle = document.getElementById('header-subtitle');
+    if (subtitle) {
+        if (page === 'home') subtitle.textContent = '电池EU合规助手';
+        else if (page === 'check') subtitle.textContent = '合规自检';
+        else if (page === 'ai') subtitle.textContent = 'AI合规推演';
+        else if (page === 'plan') subtitle.textContent = '完整合规计划';
+    }
+    
     if (page === 'ai') { initTuiyan(); }
     
     if (page === 'ai') {
@@ -2134,10 +2142,11 @@ function backToPlanOverview() {
 }
 
 function resetPlan() {
-    if (!confirm('确定要重置所有进度吗？')) return;
-    planState = { batteryType: null, scale: null, completedTasks: [], currentStation: 1 };
-    localStorage.removeItem('compliancePlan');
-    renderPlanOverview();
+    showConfirmModal('确定要重置所有进度吗？', () => {
+        planState = { batteryType: null, scale: null, completedTasks: [], currentStation: 1 };
+        localStorage.removeItem('compliancePlan');
+        renderPlanOverview();
+    });
 }
 
 // ==================== 初始化 ====================
@@ -2934,7 +2943,7 @@ function renderRoleCard(type, avatar, title, subtitle, data) {
                     <p class="text-[9px] text-gray-400 font-medium truncate">${subtitle}</p>
                 </div>
             </div>
-            <div class="text-[11px] text-gray-600 leading-relaxed safe-text" style="display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;">${formatText(statement)}</div>
+            <div class="text-[11px] text-gray-600 leading-relaxed safe-text">${formatText(statement)}</div>
             ${action ? `<p class="text-[11px] mt-1.5 font-bold" style="color:#059669;">→ ${action}</p>` : ''}
             <div class="mt-2">
                 <span class="${riskClass}" style="font-size:9px;padding:2px 6px;">${data.risk} ${urgency}</span>
@@ -3137,5 +3146,39 @@ function initTuiyan() {
 }
 </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- 自定义确认模态框 -->
+<div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background:rgba(0,0,0,0.5)">
+    <div class="bg-white rounded-2xl p-6 mx-4 max-w-sm w-full shadow-2xl">
+        <div class="text-center mb-5">
+            <div class="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <p class="text-base font-bold text-gray-800" id="confirm-modal-text">确定要执行此操作吗？</p>
+        </div>
+        <div class="flex gap-3">
+            <button onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition">取消</button>
+            <button onclick="confirmModalAction()" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition">确定</button>
+        </div>
+    </div>
+</div>
+<script>
+let confirmModalCallback = null;
+function showConfirmModal(text, callback) {
+    document.getElementById('confirm-modal-text').textContent = text;
+    confirmModalCallback = callback;
+    document.getElementById('confirm-modal').classList.remove('hidden');
+    document.getElementById('confirm-modal').classList.add('flex');
+}
+function closeConfirmModal() {
+    document.getElementById('confirm-modal').classList.add('hidden');
+    document.getElementById('confirm-modal').classList.remove('flex');
+    confirmModalCallback = null;
+}
+function confirmModalAction() {
+    if (confirmModalCallback) confirmModalCallback();
+    closeConfirmModal();
+}
+</script>
 </body>
 </html>
