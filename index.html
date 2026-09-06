@@ -2635,6 +2635,24 @@ function showTuiyanResult() {
     document.getElementById('page-ai-result').classList.remove('hidden');
     document.getElementById('ai-result-question').textContent = currentQuestion;
 
+    // 重置反馈按钮
+    const feedbackSection = document.getElementById('feedback-section');
+    if (feedbackSection) {
+        feedbackSection.innerHTML = `
+            <p class="text-xs text-gray-500 text-center mb-2">这个结果对你有帮助吗？</p>
+            <div class="flex items-center justify-center gap-3">
+                <button type="button" onclick="submitFeedback('helpful')" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-sm font-medium hover:bg-emerald-100 transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+                    有帮助
+                </button>
+                <button type="button" onclick="submitFeedback('not_helpful')" class="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-gray-500 rounded-xl text-sm font-medium hover:bg-gray-100 transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h3a2 2 0 012 2v7a2 2 0 01-2 2h-3"/></svg>
+                    没帮助
+                </button>
+            </div>
+        `;
+    }
+
     const container = document.getElementById('ai-result-container');
     container.innerHTML = '';
 
