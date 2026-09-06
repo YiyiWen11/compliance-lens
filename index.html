@@ -944,7 +944,9 @@
             <p class="text-xs text-gray-400 mb-3">输入一个具体的EU电池法执行问题</p>
             <textarea id="ai-user-question" rows="3" maxlength="500"
                 class="input-field"
-                placeholder="例如:供应商只给了行业平均数据,没有工厂具体数据,能不能先用着?"></textarea>
+                placeholder="例如:供应商只给了行业平均数据,没有工厂具体数据,能不能先用着?"
+                onfocus="trackEvent('input_focus')"
+                oninput="if(!this.dataset.typed){this.dataset.typed='1';trackEvent('input_typing')}"></textarea>
 
             <!-- 限额提示(条件渲染) -->
             <div id="ai-quota-hint" class="hidden mb-3 p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-start gap-2">
@@ -968,35 +970,35 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">热门推演</p>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
-                <button type="button" onclick="setQuestion('三年前的实测数据还能用吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('三年前的实测数据还能用吗?','old_data')" class="preset-card">
                     <div class="text-xl mb-1.5">📅</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">三年前的数据还能用吗?</div>
                 </button>
-                <button type="button" onclick="setQuestion('工厂买了绿证和PPA,能用来降低电池碳足迹吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('工厂买了绿证和PPA,能用来降低电池碳足迹吗?','green_certificate')" class="preset-card">
                     <div class="text-xl mb-1.5">🌱</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">绿证/PPA能降碳足迹吗?</div>
                 </button>
-                <button type="button" onclick="setQuestion('我们在江苏和四川有两个工厂,能合并算平均值吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('我们在江苏和四川有两个工厂,能合并算平均值吗?','multi_factory')" class="preset-card">
                     <div class="text-xl mb-1.5">🏭</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">多工厂数据能合并吗?</div>
                 </button>
-                <button type="button" onclick="setQuestion('正极材料供应商只给了行业平均LCA数据,能先用着吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('正极材料供应商只给了行业平均LCA数据,能先用着吗?','industry_avg')" class="preset-card">
                     <div class="text-xl mb-1.5">📊</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">行业平均值能用吗?</div>
                 </button>
-                <button type="button" onclick="setQuestion('电池碳足迹应该算到"摇篮到大门"还是"摇篮到坟墓"?')" class="preset-card">
+                <button type="button" onclick="setQuestion('电池碳足迹应该算到"摇篮到大门"还是"摇篮到坟墓"?','cradle_scope')" class="preset-card">
                     <div class="text-xl mb-1.5">⚰️</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">算到大门还是坟墓?</div>
                 </button>
-                <button type="button" onclick="setQuestion('欧盟不认中国的排放因子数据库,我的数据会有偏差吗?该怎么解决?')" class="preset-card">
+                <button type="button" onclick="setQuestion('欧盟不认中国的排放因子数据库,我的数据会有偏差吗?该怎么解决?','china_database')" class="preset-card">
                     <div class="text-xl mb-1.5">🌍</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库?</div>
                 </button>
-                <button type="button" onclick="setQuestion('国内碳足迹认证后,认证结果能和国际互认吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('国内碳足迹认证后,认证结果能和国际互认吗?','mutual_recognition')" class="preset-card">
                     <div class="text-xl mb-1.5">🔄</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">国内认证能和国际互认吗?</div>
                 </button>
-                <button type="button" onclick="setQuestion('国内碳足迹申报和EU电池法,哪个先跑更划算?')" class="preset-card">
+                <button type="button" onclick="setQuestion('国内碳足迹申报和EU电池法,哪个先跑更划算?','which_first')" class="preset-card">
                     <div class="text-xl mb-1.5">⏰</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">国内申报和EU合规,哪个先跑?</div>
                 </button>
@@ -1083,6 +1085,21 @@
         <div class="flex items-start gap-2 p-3 bg-gray-50 rounded-xl border border-gray-100">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" class="flex-shrink-0 mt-0.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             <p class="text-[10px] text-gray-400 leading-relaxed">本工具基于 AI 生成建议,仅供参考,不构成法律意见。具体合规操作请咨询专业机构。</p>
+        </div>
+    </div>
+
+    <!-- 满意度反馈 -->
+    <div class="px-4 mb-4" id="feedback-section">
+        <p class="text-xs text-gray-500 text-center mb-2">这个结果对你有帮助吗？</p>
+        <div class="flex items-center justify-center gap-3">
+            <button type="button" onclick="submitFeedback('helpful')" class="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-sm font-medium hover:bg-emerald-100 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
+                有帮助
+            </button>
+            <button type="button" onclick="submitFeedback('not_helpful')" class="flex items-center gap-1.5 px-4 py-2 bg-gray-50 text-gray-500 rounded-xl text-sm font-medium hover:bg-gray-100 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h3a2 2 0 012 2v7a2 2 0 01-2 2h-3"/></svg>
+                没帮助
+            </button>
         </div>
     </div>
 
@@ -2227,9 +2244,9 @@ const DEMO_DATA = {
 };
 
 // ====== 导航 ======
-function setQuestion(q) {
+function setQuestion(q, presetId) {
     document.getElementById('ai-user-question').value = q;
-    trackEvent('click_preset', { question_preview: q.substring(0, 30) });
+    trackEvent('click_preset', { preset_id: presetId || 'unknown', question_preview: q.substring(0, 30) });
 }
 
 function setQuestionAndGo(q) {
@@ -2313,7 +2330,11 @@ function consumeQuota() {
 
     stored.count = (stored.count || 0) + 1;
     safeLS('set', 'cl_usage', JSON.stringify(stored));
-    return { remaining: Math.max(0, MAX_DAILY - stored.count), used: stored.count };
+    const remaining = Math.max(0, MAX_DAILY - stored.count);
+    if (remaining === 0) {
+        trackEvent('quota_exhausted', { used_today: stored.count });
+    }
+    return { remaining: remaining, used: stored.count };
 }
 
 function updateQuotaUI() {
@@ -2413,6 +2434,8 @@ document.addEventListener('tuiyan-init', async () => {
 // ====== 核心流程 ======
 async function startDebate(isDemo = false, isFollowUp = false, questionOverride = null) {
     if (isLoading) { showToast('正在处理中,请稍候'); return; }
+
+    trackEvent('click_start_debate', { source: isFollowUp ? 'follow_up' : (questionOverride ? 'preset' : 'input') });
 
     let question;
     if (questionOverride) {
@@ -2592,6 +2615,17 @@ function parseResponse(text) {
             if (cleaned) return JSON.parse(cleaned);
         } catch (e3) {}
         throw new Error('模型输出无法解析为JSON');
+    }
+}
+
+// ====== 满意度反馈 ======
+function submitFeedback(type) {
+    trackEvent(type === 'helpful' ? 'result_helpful' : 'result_not_helpful', {
+        question_preview: currentQuestion ? currentQuestion.substring(0, 30) : ''
+    });
+    const section = document.getElementById('feedback-section');
+    if (section) {
+        section.innerHTML = '<p class="text-xs text-emerald-600 text-center font-medium">感谢反馈！</p>';
     }
 }
 
