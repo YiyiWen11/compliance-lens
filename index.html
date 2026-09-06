@@ -573,7 +573,7 @@
         </div>
         <p class="text-[10px] text-slate-300 text-center">基于 EU 2023/1542 · 信息仅供参考 · 请以官方最新法规为准</p>
         <div class="flex items-center justify-center gap-3 mt-3">
-            <a href="https://beian.miit.gov.cn/" target="_blank" class="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors">粤ICP备2026128834号</a>
+            <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors">粤ICP备2026128834号</a>
             <span class="text-slate-200">·</span>
             <a href="/privacy.html" class="text-[10px] text-slate-400 hover:text-emerald-600 transition-colors">隐私政策</a>
         </div>
@@ -588,7 +588,7 @@
         <!-- 步骤1：选电池类型 -->
         <div id="check-step-1" class="p-5">
             <div class="flex items-center gap-2 mb-6">
-                <button onclick="showPage('home')" class="text-gray-500 p-1">
+                <button type="button" onclick="showPage('home')" class="text-gray-500 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -649,7 +649,7 @@
         <!-- 步骤2：企业规模 -->
         <div id="check-step-2" class="p-5 hidden">
             <div class="flex items-center gap-2 mb-6">
-                <button onclick="goToCheckStep(1)" class="text-gray-500 p-1">
+                <button type="button" onclick="goToCheckStep(1)" class="text-gray-500 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -694,7 +694,7 @@
         <!-- 步骤3：勾选已完成 -->
         <div id="check-step-3" class="p-5 hidden">
             <div class="flex items-center gap-2 mb-4">
-                <button onclick="goToCheckStep(2)" class="text-gray-500 p-1">
+                <button type="button" onclick="goToCheckStep(2)" class="text-gray-500 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -709,13 +709,13 @@
             <p class="text-sm text-gray-500 mb-3">多选，没完成的不选</p>
 
             <div class="flex gap-2 mb-4">
-                <button onclick="checkAll(false)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">都没做（我刚起步）</button>
-                <button onclick="checkAll(true)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">全选（我都做完了）</button>
+                <button type="button" onclick="checkAll(false)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">都没做（我刚起步）</button>
+                <button type="button" onclick="checkAll(true)" class="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">全选（我都做完了）</button>
             </div>
 
             <div class="space-y-3" id="checklist-container"></div>
 
-            <button onclick="calculateResult()" class="btn-primary w-full mt-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg">
+            <button type="button" onclick="calculateResult()" class="btn-primary w-full mt-6 py-4 rounded-xl text-white font-bold text-lg shadow-lg">
                 生成我的合规报告
             </button>
         </div>
@@ -724,7 +724,7 @@
         <div id="check-result" class="hidden">
             <div class="p-5">
                 <div class="flex items-center gap-2 mb-4">
-                    <button onclick="showPage('home')" class="text-gray-500 p-1">
+                    <button type="button" onclick="showPage('home')" class="text-gray-500 p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                         </svg>
@@ -767,13 +767,13 @@
                 </div>
 
                 <div class="space-y-3">
-                    <button onclick="showFullPlan()" class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg">
+                    <button type="button" onclick="showFullPlan()" class="btn-primary w-full py-4 rounded-xl text-white font-bold text-lg shadow-lg">
                         查看完整行动清单
                     </button>
-                    <button onclick="startCompliancePlan()" class="w-full py-4 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-lg shadow flex items-center justify-center gap-2">
+                    <button type="button" onclick="startCompliancePlan()" class="w-full py-4 rounded-xl border-2 border-purple-300 bg-purple-50 text-purple-700 font-bold text-lg shadow flex items-center justify-center gap-2">
                         <span>🗺️</span> 生成完整合规路线图
                     </button>
-                    <button onclick="shareResult()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
+                    <button type="button" onclick="shareResult()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                         </svg>
@@ -782,7 +782,7 @@
                 </div>
 
                 <div class="text-center mt-6 pt-6 border-t border-gray-100">
-                    <button onclick="resetCheck()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
+                    <button type="button" onclick="resetCheck()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
@@ -795,7 +795,7 @@
         <!-- 完整清单页 -->
         <div id="check-plan" class="hidden p-5">
             <div class="flex items-center gap-2 mb-6">
-                <button onclick="backToResult()" class="text-gray-500 p-1">
+                <button type="button" onclick="backToResult()" class="text-gray-500 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                     </svg>
@@ -850,7 +850,7 @@
 
             <div class="bg-gray-50 rounded-xl p-4 mb-6">
                 <h4 class="font-bold text-gray-800 mb-2">参考资料</h4>
-                <a href="https://single-market-economy.ec.europa.eu/document/download/cd1e5e6c-4a4a-4b99-995a-49eb6916187e_en" target="_blank" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                <a href="https://single-market-economy.ec.europa.eu/document/download/cd1e5e6c-4a4a-4b99-995a-49eb6916187e_en" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
                     <span class="text-xl">📋</span>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-800">EU电池护照指南V2.0</p>
@@ -863,13 +863,13 @@
             </div>
 
             <div class="space-y-3 mb-8">
-                <button onclick="sharePlan()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
+                <button type="button" onclick="sharePlan()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-600 font-medium flex items-center justify-center gap-2">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
                     </svg>
                     分享这份清单
                 </button>
-                <button onclick="startCompliancePlanFromChecklist()" class="btn-primary w-full py-3 rounded-xl text-white font-bold text-lg shadow flex items-center justify-center gap-2">
+                <button type="button" onclick="startCompliancePlanFromChecklist()" class="btn-primary w-full py-3 rounded-xl text-white font-bold text-lg shadow flex items-center justify-center gap-2">
                     <span>🗺️</span> 升级为可追踪的7站计划
                 </button>
                 <p class="text-xs text-center text-gray-400">追踪每项任务进度，自动解锁下一站</p>
@@ -916,7 +916,7 @@
     <!-- 次数提示栏 -->
             <!-- 返回首页 -->
         <div class="px-5 pt-3 pb-1 flex items-center">
-            <button onclick="showPage('home')" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-emerald-600 transition-colors font-medium bg-slate-50 hover:bg-emerald-50 px-3 py-2 rounded-lg">
+            <button type="button" onclick="showPage('home')" class="flex items-center gap-1.5 text-sm text-slate-500 hover:text-emerald-600 transition-colors font-medium bg-slate-50 hover:bg-emerald-50 px-3 py-2 rounded-lg">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 返回首页
             </button>
@@ -955,7 +955,7 @@
                 </div>
             </div>
 
-            <button onclick="startDebate()" id="ai-btn-start"
+            <button type="button" onclick="startDebate()" id="ai-btn-start"
                 class="btn-primary w-full text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
                 <span>获取三方推演</span>
@@ -968,35 +968,35 @@
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">热门推演</p>
             </div>
             <div class="grid grid-cols-2 gap-2.5">
-                <button onclick="setQuestion('三年前的实测数据还能用吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('三年前的实测数据还能用吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">📅</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">三年前的数据还能用吗?</div>
                 </button>
-                <button onclick="setQuestion('工厂买了绿证和PPA,能用来降低电池碳足迹吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('工厂买了绿证和PPA,能用来降低电池碳足迹吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">🌱</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">绿证/PPA能降碳足迹吗?</div>
                 </button>
-                <button onclick="setQuestion('我们在江苏和四川有两个工厂,能合并算平均值吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('我们在江苏和四川有两个工厂,能合并算平均值吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">🏭</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">多工厂数据能合并吗?</div>
                 </button>
-                <button onclick="setQuestion('正极材料供应商只给了行业平均LCA数据,能先用着吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('正极材料供应商只给了行业平均LCA数据,能先用着吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">📊</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">行业平均值能用吗?</div>
                 </button>
-                <button onclick="setQuestion('电池碳足迹应该算到"摇篮到大门"还是"摇篮到坟墓"?')" class="preset-card">
+                <button type="button" onclick="setQuestion('电池碳足迹应该算到"摇篮到大门"还是"摇篮到坟墓"?')" class="preset-card">
                     <div class="text-xl mb-1.5">⚰️</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">算到大门还是坟墓?</div>
                 </button>
-                <button onclick="setQuestion('欧盟不认中国的排放因子数据库,我的数据会有偏差吗?该怎么解决?')" class="preset-card">
+                <button type="button" onclick="setQuestion('欧盟不认中国的排放因子数据库,我的数据会有偏差吗?该怎么解决?')" class="preset-card">
                     <div class="text-xl mb-1.5">🌍</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">欧盟不认中国数据库?</div>
                 </button>
-                <button onclick="setQuestion('国内碳足迹认证后,认证结果能和国际互认吗?')" class="preset-card">
+                <button type="button" onclick="setQuestion('国内碳足迹认证后,认证结果能和国际互认吗?')" class="preset-card">
                     <div class="text-xl mb-1.5">🔄</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">国内认证能和国际互认吗?</div>
                 </button>
-                <button onclick="setQuestion('国内碳足迹申报和EU电池法,哪个先跑更划算?')" class="preset-card">
+                <button type="button" onclick="setQuestion('国内碳足迹申报和EU电池法,哪个先跑更划算?')" class="preset-card">
                     <div class="text-xl mb-1.5">⏰</div>
                     <div class="text-xs font-semibold text-gray-700 leading-snug">国内申报和EU合规,哪个先跑?</div>
                 </button>
@@ -1065,7 +1065,7 @@
 <!-- ====== 结果页 ====== -->
 <div id="page-ai-result" class="hidden min-h-screen pb-28" style="background: #f0f4f8;">
     <div class="hero-bg text-white px-5 pt-12 pb-8 sticky top-0 z-30">
-        <button onclick="showPage('home')" class="text-white/50 text-sm mb-3 flex items-center gap-1.5 hover:text-white transition font-medium">
+        <button type="button" onclick="showPage('home')" class="text-white/50 text-sm mb-3 flex items-center gap-1.5 hover:text-white transition font-medium">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
             返回首页
         </button>
@@ -1088,12 +1088,12 @@
 
     <!-- 底部操作栏 -->
     <div class="bottom-bar">
-        <button onclick="copyAiResult()"
+        <button type="button" onclick="copyAiResult()"
             class="btn-secondary flex-1 text-sm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
             <span>复制结果</span>
         </button>
-        <button onclick="showAiShareModal()"
+        <button type="button" onclick="showAiShareModal()"
             class="btn-primary flex-1 text-sm" style="box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             <span>分享卡片</span>
@@ -1156,7 +1156,7 @@
         </div>
     </div>
     <div class="absolute bottom-8 left-0 right-0 flex justify-center">
-        <button onclick="downloadAiShareCard()"
+        <button type="button" onclick="downloadAiShareCard()"
             class="bg-white text-gray-800 font-bold py-3 px-8 rounded-full shadow-2xl text-sm flex items-center gap-2">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             保存图片
@@ -1184,10 +1184,10 @@
                         <p class="text-sm font-bold text-gray-800">关注公众号</p>
                         <p class="text-[11px] text-gray-400">后台留言"试用",人工开通体验额度</p>
                     </div>
-                    <button onclick="copyWechatID()" class="px-3 py-1.5 bg-green-50 text-green-600 text-xs font-bold rounded-lg border border-green-200">复制</button>
+                    <button type="button" onclick="copyWechatID()" class="px-3 py-1.5 bg-green-50 text-green-600 text-xs font-bold rounded-lg border border-green-200">复制</button>
                 </div>
             </div>
-            <button onclick="closeAiQuotaModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl">知道了,明天再来</button>
+            <button type="button" onclick="closeAiQuotaModal()" class="w-full mt-4 py-3 bg-gray-100 text-gray-500 text-sm font-bold rounded-xl">知道了,明天再来</button>
         </div>
     </div>
 
@@ -1201,7 +1201,7 @@
         <!-- 7站总览 -->
         <div id="plan-overview" class="p-5">
             <div class="flex items-center gap-2 mb-4">
-                <button onclick="showPage('home')" class="text-gray-500 p-1">
+                <button type="button" onclick="showPage('home')" class="text-gray-500 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 <h2 class="text-xl font-bold text-gray-800">完整合规计划</h2>
@@ -1229,7 +1229,7 @@
             <div class="space-y-3" id="stations-list"></div>
 
             <div class="mt-6 text-center">
-                <button onclick="resetPlan()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
+                <button type="button" onclick="resetPlan()" class="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1 mx-auto">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     重置进度
                 </button>
@@ -1240,10 +1240,10 @@
         <div id="plan-station-detail" class="hidden">
             <div class="p-5">
                 <div class="flex items-center gap-2 mb-4">
-                    <button onclick="showPage('home')" class="text-gray-500 p-1">
+                    <button type="button" onclick="showPage('home')" class="text-gray-500 p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
                     </button>
-                    <button onclick="backToPlanOverview()" class="text-gray-500 p-1">
+                    <button type="button" onclick="backToPlanOverview()" class="text-gray-500 p-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                     </button>
                     <div class="flex-1">
@@ -1965,8 +1965,10 @@ let planState = loadPlanProgress();
 
 function loadPlanProgress() {
     try {
-        const saved = localStorage.getItem('compliancePlan');
-        if (saved) return JSON.parse(saved);
+        const saved = safeLS('get', 'compliancePlan');
+        if (saved) {
+            try { return JSON.parse(saved); } catch(e) { return null; }
+        }
     } catch (e) {}
     return {
         batteryType: null, scale: null,
@@ -1975,7 +1977,7 @@ function loadPlanProgress() {
 }
 
 function savePlanProgress() {
-    localStorage.setItem('compliancePlan', JSON.stringify(planState));
+    safeLS('set', 'compliancePlan', JSON.stringify(planState));
 }
 
 function startCompliancePlan() {
@@ -2024,7 +2026,7 @@ function renderPlanOverview() {
         stationsList.insertAdjacentHTML('beforebegin', `
             <div id="plan-selfcheck-guide" class="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4">
                 <p class="text-sm text-orange-800 font-medium">💡 先做2分钟自检，自动带入你的电池类型和合规进度</p>
-                <button onclick="showPage('check')" class="mt-2 text-sm bg-orange-500 text-white px-4 py-2 rounded-lg font-medium">去自检</button>
+                <button type="button" onclick="showPage('check')" class="mt-2 text-sm bg-orange-500 text-white px-4 py-2 rounded-lg font-medium">去自检</button>
             </div>
         `);
     } else {
@@ -2146,7 +2148,7 @@ function backToPlanOverview() {
 function resetPlan() {
     showConfirmModal('确定要重置所有进度吗？', () => {
         planState = { batteryType: null, scale: null, completedTasks: [], currentStation: 1 };
-        localStorage.removeItem('compliancePlan');
+        safeLS('remove', 'compliancePlan');
         renderPlanOverview();
     });
 }
@@ -2168,6 +2170,16 @@ const API_URL = '/api/debate';  // 走后端代理，隐藏 API Key
 let currentQuestion = '';
 let currentResult = {};
 let isLoading = false;
+
+// ====== localStorage safe wrapper ======
+function safeLS(method, key, value) {
+    try {
+        if (method === 'get') return localStorage.getItem(key);
+        if (method === 'set') return localStorage.setItem(key, value);
+        if (method === 'remove') return localStorage.removeItem(key);
+    } catch (e) { return null; }
+}
+
 
 // ====== 安全工具函数 ======
 function escapeHtml(str) {
@@ -2243,10 +2255,10 @@ const MAX_DAILY = 5;
 let userIP = null;
 
 function getDeviceID() {
-    let id = localStorage.getItem('cl_device_id');
+    let id = safeLS('get', 'cl_device_id');
     if (!id) {
         id = 'cl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('cl_device_id', id);
+        safeLS('set', 'cl_device_id', id);
     }
     return id;
 }
@@ -2268,17 +2280,17 @@ async function getUserIP() {
 function getQuotaStatus() {
     const today = new Date().toDateString();
     const deviceID = getDeviceID();
-    const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+    const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
 
     if (stored.date !== today) {
         const fresh = { date: today, deviceID: deviceID, ip: userIP || 'unknown', count: 0 };
-        localStorage.setItem('cl_usage', JSON.stringify(fresh));
+        safeLS('set', 'cl_usage', JSON.stringify(fresh));
         return { remaining: MAX_DAILY, used: 0, isNewDay: true };
     }
 
     if (stored.deviceID !== deviceID) {
         stored.deviceID = deviceID;
-        localStorage.setItem('cl_usage', JSON.stringify(stored));
+        safeLS('set', 'cl_usage', JSON.stringify(stored));
     }
 
     const used = stored.count || 0;
@@ -2287,10 +2299,10 @@ function getQuotaStatus() {
 
 function consumeQuota() {
     const today = new Date().toDateString();
-    const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+    const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
 
     if (stored.date !== today) {
-        localStorage.setItem('cl_usage', JSON.stringify({
+        safeLS('set', 'cl_usage', JSON.stringify({
             date: today,
             deviceID: getDeviceID(),
             ip: userIP || 'unknown',
@@ -2300,7 +2312,7 @@ function consumeQuota() {
     }
 
     stored.count = (stored.count || 0) + 1;
-    localStorage.setItem('cl_usage', JSON.stringify(stored));
+    safeLS('set', 'cl_usage', JSON.stringify(stored));
     return { remaining: Math.max(0, MAX_DAILY - stored.count), used: stored.count };
 }
 
@@ -2393,7 +2405,7 @@ function copyWechatID() {
 // 初始化
 document.addEventListener('tuiyan-init', async () => {
     // 清理旧版本遗留数据
-    localStorage.removeItem('usage_limit');
+    safeLS('remove', 'usage_limit');
     await getUserIP();
     updateQuotaUI();
 });
@@ -2440,8 +2452,11 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
     isLoading = true;
     showTuiyanLoading();
 
-    const followUpRaw = localStorage.getItem('follow_up');
-    const followUp = followUpRaw ? JSON.parse(followUpRaw) : null;
+    const followUpRaw = safeLS('get', 'follow_up');
+    let followUp = null;
+    if (followUpRaw) {
+        try { followUp = JSON.parse(followUpRaw); } catch(e) { followUp = null; }
+    }
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -2450,7 +2465,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
         if (isDemo) {
             await simulateLoading();
             currentResult = DEMO_DATA;
-            localStorage.removeItem('follow_up');
+            safeLS('remove', 'follow_up');
             showTuiyanResult();
             return;
         }
@@ -2495,14 +2510,14 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
 
         const data = await response.json();
         currentResult = parseResponse(data.choices[0].message.content);
-        localStorage.removeItem('follow_up');
+        safeLS('remove', 'follow_up');
         trackEvent('api_success', { question_preview: currentQuestion.substring(0, 30) });
         showTuiyanResult();
 
     } catch (err) {
         clearTimeout(timeoutId);
         console.error('API调用失败:', err);
-        localStorage.removeItem('follow_up');
+        safeLS('remove', 'follow_up');
         trackEvent('api_fail', {
             error_type: err.name === 'AbortError' ? 'timeout' : 'api_error',
             question_preview: currentQuestion.substring(0, 30)
@@ -2510,10 +2525,10 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
 
         // API失败时退还额度
         if (!isDemo) {
-            const stored = JSON.parse(localStorage.getItem('cl_usage') || '{}');
+            const stored = JSON.parse(safeLS('get', 'cl_usage') || '{}');
             if (stored.count > 0) {
                 stored.count -= 1;
-                localStorage.setItem('cl_usage', JSON.stringify(stored));
+                safeLS('set', 'cl_usage', JSON.stringify(stored));
                 updateQuotaUI();
             }
         }
@@ -2849,7 +2864,7 @@ function renderRelatedQuestions() {
             <div class="p-3">
                 <div class="space-y-2">
                     ${questions.map((fq, i) => `
-                        <button onclick="setQuestionAndGo('${fq.replace(/'/g, "\\'")}')" class="w-full text-left p-3.5 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all group">
+                        <button type="button" onclick="setQuestionAndGo('${fq.replace(/'/g, "\\'")}')" class="w-full text-left p-3.5 rounded-xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all group">
                             <div class="flex items-center gap-3">
                                 <span class="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center text-[11px] font-bold text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 group-hover:border-blue-100 transition-all">${String.fromCharCode(65+i)}</span>
                                 <span class="text-sm text-gray-700 group-hover:text-gray-900 font-medium flex-1 leading-snug">${escapeHtml(fq)}</span>
@@ -3159,8 +3174,8 @@ function initTuiyan() {
             <p class="text-base font-bold text-gray-800" id="confirm-modal-text">确定要执行此操作吗？</p>
         </div>
         <div class="flex gap-3">
-            <button onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition">取消</button>
-            <button onclick="confirmModalAction()" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition">确定</button>
+            <button type="button" onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition">取消</button>
+            <button type="button" onclick="confirmModalAction()" class="flex-1 py-3 rounded-xl bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition">确定</button>
         </div>
     </div>
 </div>
