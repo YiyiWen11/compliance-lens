@@ -3023,8 +3023,8 @@ function startPassportForm() {
 }
 
 function applyPassportMode() {
-    // 快速模式下只显示的分类
-    const QUICK_CATEGORIES = ['manufacturer', 'product', 'carbon'];
+    // 快速模式下显示的分类(包含所有有核心字段的分类,字段级过滤在下方处理)
+    const QUICK_CATEGORIES = ['manufacturer', 'product', 'materials', 'recycling', 'carbon'];
 
     // 1. 处理分类导航按钮
     document.querySelectorAll('.passport-cat-btn').forEach(btn => {
@@ -3094,9 +3094,9 @@ const GAP_RULES = [
     { field: 'product-capacity', category: 'product', key: 'capacity', priority: 'P0', title: '额定容量', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '从产品规格书获取额定容量(Ah)' },
     { field: 'product-voltage', category: 'product', key: 'voltage', priority: 'P0', title: '额定电压', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '从产品规格书获取额定电压(V)' },
     { field: 'cathode-chemistry', category: 'materials', key: 'cathodeChemistry', priority: 'P0', title: '正极化学体系', reason: '决定材料成分和回收要求', leadTime: '即时', deadline: '2027-02-18', action: '确认正极材料化学体系(NCM811/LFP等)' },
+    { field: 'anode-chemistry', category: 'materials', key: 'anodeChemistry', priority: 'P0', title: '负极化学体系', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '确认负极材料类型(石墨/硅基等)' },
 
     // P1: 需要内部协调或技术评估
-    { field: 'bms-interface', category: 'product', key: 'bmsInterface', priority: 'P1', title: 'BMS数据接口能力', reason: '涉及产线改造,需技术评估', leadTime: '3-6个月', deadline: '2027-02-18', action: '联系BMS厂商评估MQTT/OPC-UA协议支持' },
     { field: 'cathode-source', category: 'materials', key: 'cathodeSource', priority: 'P1', title: '正极材料供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认正极材料供应商名称和产地' },
     { field: 'anode-source', category: 'materials', key: 'anodeSource', priority: 'P1', title: '负极材料供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认负极材料供应商名称和产地' },
     { field: 'electrolyte-source', category: 'materials', key: 'electrolyteSource', priority: 'P1', title: '电解液供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认电解液供应商名称和产地' },
@@ -3185,13 +3185,6 @@ function renderGapAnalysis() {
     activeRules.forEach(rule => {
         const val = dppData[rule.category]?.[rule.key];
         const isFilled = val && String(val).trim() !== '';
-
-        // 特殊处理供应商
-        if (rule.field === 'bms-interface') {
-            // BMS接口是特殊字段,检查是否有相关数据
-            const hasBMS = dppData.product?.bmsInterface || dppData.product?.category === 'ev' || dppData.product?.category === 'lmt';
-            if (!hasBMS) return; // 还没选电池类型,不显示
-        }
 
         if (!isFilled) {
             const item = { ...rule };
@@ -3708,7 +3701,7 @@ if (document.readyState === 'loading') {
                     </div>
                     <div>
                         <div class="font-bold text-slate-800 text-sm">快速模式(推荐)</div>
-                        <div class="text-[11px] text-slate-500">只填6项核心必填项,5分钟摸清家底</div>
+                        <div class="text-[11px] text-slate-500">只填11项核心必填项,5分钟摸清家底</div>
                     </div>
                 </button>
                 <button type="button" onclick="setPassportMode('full')" id="mode-btn-full" class="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-gray-200 text-left transition-colors hover:border-gray-300">
