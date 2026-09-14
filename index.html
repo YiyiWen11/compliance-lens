@@ -420,6 +420,16 @@
         
         // 安全的事件追踪封装
         function trackEvent(eventName, params) {
+            // 同时发送到后端埋点
+            try {
+                fetch("/api/track", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ event: eventName, params: params || {} }),
+                    keepalive: true
+                }).catch(() => {});
+            } catch (e) {}
+
             if (typeof gtag === 'function') {
                 gtag('event', eventName, params || {});
             }
@@ -548,7 +558,22 @@
                 </div>
             </div>
             
-            <!-- 完整合规计划 -->
+            <!-- 电池护照 -->
+            <div onclick="showPage('passport')" class="group cursor-pointer">
+                <div class="rounded-2xl bg-white border border-gray-100 p-4 hover:shadow-md hover:border-emerald-200 transition-all duration-300 h-full relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-50 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mb-3 group-hover:bg-emerald-100 transition-colors relative z-10">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-bold text-slate-700 text-sm mb-1 relative z-10">电池护照</h3>
+                    <p class="text-[11px] text-slate-400 leading-relaxed relative z-10">71项数据点录入<br/>DPP预览+导出</p>
+                    <span class="absolute top-3 right-3 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-bold rounded-full z-10">NEW</span>
+                </div>
+            </div>
+            <!-- 合规路线图 -->
             <div onclick="showPage('plan')" class="group cursor-pointer">
                 <div class="rounded-2xl bg-white border border-gray-100 p-4 hover:shadow-md hover:border-slate-200 transition-all duration-300 h-full">
                     <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center mb-3 group-hover:bg-slate-100 transition-colors">
@@ -733,6 +758,7 @@
                 </div>
 
                 <div class="flex gap-2 mb-4 flex-wrap" id="user-tags"></div>
+                <div id="encouragement-text" class="mb-4 text-sm font-medium text-emerald-700 bg-emerald-50 rounded-lg p-3 border border-emerald-100 hidden"></div>
 
                 <div class="text-center mb-4">
                     <div class="radar-container mb-4">
@@ -1103,6 +1129,28 @@
         </div>
     </div>
 
+    <!-- 添加微信入口 -->
+    <div class="px-4 mb-4" id="wechat-cta" style="display:none;">
+        <div class="bg-gradient-to-r from-slate-50 to-emerald-50 rounded-xl p-4 border border-emerald-100">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                </div>
+                <div class="flex-1">
+                    <p class="text-sm font-semibold text-gray-800 mb-1">还有具体问题？1v1聊聊</p>
+                    <p class="text-xs text-gray-500 mb-3">加我微信，帮你拆解EU合规卡点</p>
+                    <div class="flex items-center gap-3">
+                        <img src="wechat-qr.jpg" alt="微信二维码" class="w-20 h-20 rounded-lg border border-gray-200 object-contain bg-white">
+                        <div class="text-xs text-gray-400">
+                            <p>扫码添加</p>
+                            <p>备注：合规</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 底部操作栏 -->
     <div class="bottom-bar">
         <button type="button" onclick="copyAiResult()"
@@ -1279,8 +1327,47 @@
 </div>
 
 <script>
+// ==================== 页面停留时间追踪 ====================
+let currentPageName = 'home';
+let pageEnterTime = Date.now();
+
+function trackPageView(pageName) {
+    trackEvent('page_view', { page: pageName, referrer: document.referrer });
+}
+
+function trackPageExit(pageName, durationSeconds) {
+    if (durationSeconds < 1) return;
+    const data = JSON.stringify({
+        event: 'page_exit',
+        params: { page: pageName, duration_seconds: durationSeconds }
+    });
+    if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/track', new Blob([data], { type: 'application/json' }));
+    } else {
+        try {
+            fetch('/api/track', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: data,
+                keepalive: true
+            }).catch(() => {});
+        } catch (e) {}
+    }
+}
+
+window.addEventListener('beforeunload', function() {
+    const duration = Math.round((Date.now() - pageEnterTime) / 1000);
+    trackPageExit(currentPageName, duration);
+});
+
 // ==================== 页面路由 ====================
 function showPage(page) {
+    // 记录旧页面退出
+    const duration = Math.round((Date.now() - pageEnterTime) / 1000);
+    if (duration > 0 && currentPageName !== page) {
+        trackPageExit(currentPageName, duration);
+    }
+    
     ['home', 'check', 'ai', 'plan'].forEach(p => {
         const el = document.getElementById('page-' + p);
         if (el) el.classList.add('hidden');
@@ -1289,6 +1376,13 @@ function showPage(page) {
     if (target) target.classList.remove('hidden');
     
     window.scrollTo(0, 0);
+    
+    // 记录新页面进入
+    if (currentPageName !== page) {
+        currentPageName = page;
+        pageEnterTime = Date.now();
+        trackPageView(page);
+    }
     
     const subtitle = document.getElementById('header-subtitle');
     if (subtitle) {
@@ -1317,7 +1411,7 @@ let checkState = {
     completedItems: [],
     dimensions: {
         carbon: { name: '碳足迹声明', score: 0, weight: 0.3 },
-        passport: { name: '电池护照', score: 0, weight: 0.25 },
+        passport: { name: '数据准备', score: 0, weight: 0.25 },
         recycling: { name: '回收材料', score: 0, weight: 0.2 },
         diligence: { name: '尽责管理', score: 0, weight: 0.15 },
         label: { name: 'CE标签', score: 0, weight: 0.1 }
@@ -1330,9 +1424,8 @@ const checklistConfig = {
         { id: 'carbon_1', dimension: 'carbon', text: '已完成碳足迹核算（知道CF值）' },
         { id: 'carbon_2', dimension: 'carbon', text: '已生成碳足迹声明报告' },
         { id: 'carbon_3', dimension: 'carbon', text: '已通过第三方机构审核（SGS/TÜV/CQC）' },
-        { id: 'passport_1', dimension: 'passport', text: '已梳理71项数据点适用性' },
-        { id: 'passport_2', dimension: 'passport', text: 'BMS已预留数据接口' },
-        { id: 'passport_3', dimension: 'passport', text: '已生成DPP数据包' },
+        { id: 'passport_1', dimension: 'passport', text: '已在「电池护照」模块录入核心数据' },
+        { id: 'passport_2', dimension: 'passport', text: '已导出数据包备份' },
         { id: 'recycling_1', dimension: 'recycling', text: '已收集正极材料回收证明' },
         { id: 'recycling_2', dimension: 'recycling', text: '已收集负极材料回收证明' },
         { id: 'recycling_3', dimension: 'recycling', text: '供应商已签署回收料承诺书' },
@@ -1344,14 +1437,14 @@ const checklistConfig = {
     industrial: [
         { id: 'carbon_1', dimension: 'carbon', text: '已完成碳足迹核算（知道CF值）' },
         { id: 'carbon_2', dimension: 'carbon', text: '已生成碳足迹声明报告' },
-        { id: 'passport_1', dimension: 'passport', text: '已梳理71项数据点适用性' },
-        { id: 'passport_2', dimension: 'passport', text: 'BMS已预留数据接口' },
+        { id: 'passport_1', dimension: 'passport', text: '已在「电池护照」模块录入核心数据' },
+        { id: 'passport_2', dimension: 'passport', text: '已导出数据包备份' },
         { id: 'recycling_1', dimension: 'recycling', text: '已收集回收材料证明' },
         { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
         { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' }
     ],
     lmt: [
-        { id: 'passport_1', dimension: 'passport', text: '已了解电池护照要求（2030.2起）' },
+        { id: 'passport_1', dimension: 'passport', text: '已在「电池护照」模块了解DPP要求' },
         { id: 'passport_2', dimension: 'passport', text: '产品标签符合可拆卸/可更换要求（2027.2起）' },
         { id: 'diligence_1', dimension: 'diligence', text: '已建立供应链尽责管理政策' },
         { id: 'label_1', dimension: 'label', text: '产品已贴CE标签' },
@@ -1409,7 +1502,7 @@ function renderChecklist() {
     const grouped = {};
     items.forEach(item => { if (!grouped[item.dimension]) grouped[item.dimension] = []; grouped[item.dimension].push(item); });
     
-    const dimensionNames = { carbon: '碳足迹声明', passport: '电池护照', recycling: '回收材料', diligence: '尽责管理', label: 'CE标签' };
+    const dimensionNames = { carbon: '碳足迹声明', passport: '数据准备', recycling: '回收材料', diligence: '尽责管理', label: 'CE标签' };
     let html = '';
     Object.keys(grouped).forEach(dim => {
         html += `<div class="mb-4"><h4 class="text-sm font-bold text-gray-700 mb-2">${dimensionNames[dim]}</h4>`;
@@ -1467,9 +1560,39 @@ function calculateResult() {
     document.getElementById('check-result').classList.remove('hidden');
     document.getElementById('check-result').classList.add('fade-in');
     setTimeout(() => drawRadarChart(), 100);
+    // 上报自检结果
+    try {
+        fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "selfcheck_complete",
+                data: {
+                    batteryType: checkState.batteryType,
+                    scale: checkState.scale,
+                    score: finalScore,
+                    peerRank: peerRank,
+                    dimensions: checkState.dimensions
+                }
+            }),
+            keepalive: true
+        }).catch(() => {});
+    } catch (e) {}
+
 }
 
 function renderResult(totalScore, peerRank) {
+    // 正向认可文案
+    const encEl = document.getElementById('encouragement-text');
+    if (encEl) {
+        let msg = '';
+        if (totalScore >= 70) msg = '你的合规基础已经不错了，接下来是精细化打磨 💪';
+        else if (totalScore >= 50) msg = '能主动来做自检，你已经超越了行业里一大半同行 👏';
+        else msg = '越早发现缺口，越有时间补上——你现在开始，刚刚好 🌱';
+        encEl.textContent = msg;
+        encEl.classList.remove('hidden');
+    }
+
     document.getElementById('user-tags').innerHTML = `
         <span class="tag-pill bg-blue-100 text-blue-700">${batteryTypeNames[checkState.batteryType]}</span>
         <span class="tag-pill bg-gray-100 text-gray-600">年出口${scaleNames[checkState.scale]}</span>`;
@@ -1485,7 +1608,7 @@ function renderResult(totalScore, peerRank) {
     const dimContainer = document.getElementById('dimension-details');
     const dimConfig = [
         { key: 'carbon', label: '碳足迹声明', color: 'bg-blue-500' },
-        { key: 'passport', label: '电池护照', color: 'bg-purple-500' },
+        { key: 'passport', label: '数据准备', color: 'bg-purple-500' },
         { key: 'recycling', label: '回收材料', color: 'bg-green-500' },
         { key: 'diligence', label: '尽责管理', color: 'bg-orange-500' },
         { key: 'label', label: 'CE标签', color: 'bg-gray-500' }
@@ -1501,7 +1624,7 @@ function renderResult(totalScore, peerRank) {
     const priorities = [];
     if (checkState.dimensions.recycling.score < 30) priorities.push({ level: 'p0', text: '立即启动回收材料证明收集', desc: '供应商证明周期长，2027年前必须到位' });
     if (checkState.dimensions.carbon.score < 50) priorities.push({ level: 'p0', text: '启动碳足迹核算', desc: 'EV电池已强制，工业电池2027.2截止' });
-    if (checkState.dimensions.passport.score < 40) priorities.push({ level: 'p1', text: '梳理电池护照71项数据点', desc: 'BMS改造需要6-12个月' });
+    if (checkState.dimensions.passport.score < 40) priorities.push({ level: 'p1', text: '开始使用电池护照数据录入工具', desc: '提前准备DPP所需数据' });
     if (checkState.dimensions.diligence.score < 50) priorities.push({ level: 'p1', text: '建立供应链尽责管理政策', desc: '2027.8起强制要求' });
     if (checkState.dimensions.label.score < 100) priorities.push({ level: 'p2', text: '完善CE标签信息', desc: '确保包含容量和化学成分' });
     if (priorities.length === 0) priorities.push({ level: 'p2', text: '持续监控法规更新', desc: '你已准备充分，保持关注即可' });
@@ -1527,7 +1650,7 @@ function drawRadarChart() {
     canvas.width = size * dpr; canvas.height = size * dpr;
     ctx.scale(dpr, dpr); canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
     
-    const dims = ['carbon', 'passport', 'recycling', 'diligence', 'label'], labels = ['碳足迹', '护照', '回收', '尽责', '标签'];
+    const dims = ['carbon', 'passport', 'recycling', 'diligence', 'label'], labels = ['碳足迹', '数据准备', '回收', '尽责', '标签'];
     
     for (let i = 1; i <= 5; i++) {
         ctx.beginPath(); ctx.strokeStyle = i === 5 ? '#e2e8f0' : '#f1f5f9'; ctx.lineWidth = 1;
@@ -1603,7 +1726,7 @@ function taskItem(color, title, desc, time) {
 function resetCheck() {
     checkState = {
         batteryType: null, scale: null, completedItems: [],
-        dimensions: { carbon: { name: '碳足迹声明', score: 0, weight: 0.3 }, passport: { name: '电池护照', score: 0, weight: 0.25 }, recycling: { name: '回收材料', score: 0, weight: 0.2 }, diligence: { name: '尽责管理', score: 0, weight: 0.15 }, label: { name: 'CE标签', score: 0, weight: 0.1 } }
+        dimensions: { carbon: { name: '碳足迹声明', score: 0, weight: 0.3 }, passport: { name: '数据准备', score: 0, weight: 0.25 }, recycling: { name: '回收材料', score: 0, weight: 0.2 }, diligence: { name: '尽责管理', score: 0, weight: 0.15 }, label: { name: 'CE标签', score: 0, weight: 0.1 } }
     };
     document.querySelectorAll('#check-step-1 .option-card, #check-step-2 .option-card, #checklist-container .option-card').forEach(el => el.classList.remove('selected'));
     document.getElementById('check-result').classList.add('hidden');
@@ -1621,7 +1744,7 @@ function shareResult() {
     let topPriority = '来测测你的EU合规进度';
     if (checkState.dimensions.recycling.score < 30) topPriority = '最紧急：启动回收材料证明收集';
     else if (checkState.dimensions.carbon.score < 50) topPriority = '最紧急：启动碳足迹核算';
-    else if (checkState.dimensions.passport.score < 40) topPriority = '最紧急：梳理电池护照71项数据点';
+    else if (checkState.dimensions.passport.score < 40) topPriority = '最紧急：开始使用电池护照数据录入工具';
     const text = `【${typeName} | EU合规自检】\n完成度：${score}\n同行排名：${rank}\n${topPriority}\n\n来测测你的：compliance-battery.com`;
     doShare(text);
 }
@@ -1669,23 +1792,12 @@ const STATIONS_CONFIG = [
         ]
     },
     {
-        id: 3, title: '电池护照', subtitle: '71项数据点，从梳理到DPP上线',
+        id: 3, title: '数据准备', subtitle: '使用电池护照模块提前录入DPP数据',
         tasks: [
-            { id: 's3_1', text: '梳理71项数据点适用性（哪些必填）', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 71项数据点清单' },
-            { id: 's3_2', text: '评估BMS数据接口能力', level: 'recommended', ref: 'EU 2023/1542 Art.77 - 要求"可访问"，BMS是主流技术路径' },
-            { id: 's3_3', text: '联系BMS厂商确认改造方案', level: 'recommended', ref: '技术实施最佳实践 - 改造周期6-12个月' },
-            { id: 's3_4', text: '收集静态数据（ERP/PLM导出）', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 静态数据要求' },
-            { id: 's3_5', text: '收集动态数据需求（容量/内阻/温度）', level: 'recommended', ref: 'EU电池护照指南V2.0 - 动态数据建议项' },
-            { id: 's3_6', text: '建立数据字典（字段定义）', level: 'recommended', ref: 'CIRPASS标准 - 数据标准化要求' },
-            { id: 's3_7', text: '开发/采购DPP数据包生成工具', level: 'recommended', ref: 'CIRPASS标准 - DPP数据格式（JSON/XML）' },
-            { id: 's3_8', text: '与供应商签署数据共享协议', level: 'mandatory', ref: 'EU 2023/1542 Art.48 - 供应链透明度要求' },
-            { id: 's3_9', text: '收集回收料比例证明', level: 'mandatory', ref: 'EU 2023/1542 Art.8 - 回收料披露义务' },
-            { id: 's3_10', text: '收集材料成分声明', level: 'mandatory', ref: 'EU电池护照指南V2.0 - 材料成分必填项' },
-            { id: 's3_11', text: '生成DPP数据包（JSON/XML）', level: 'mandatory', ref: 'EU 2023/1542 Art.77 - 护照数据格式' },
-            { id: 's3_12', text: '内部测试数据包完整性', level: 'recommended', ref: '质量管控最佳实践' },
-            { id: 's3_13', text: '注册DPP系统账号', level: 'mandatory', ref: 'EU 2023/1542 Art.77(4) - 注册义务' },
-            { id: 's3_14', text: '上传数据包到DPP系统', level: 'mandatory', ref: 'EU 2023/1542 Art.77(4) - 上传义务' },
-            { id: 's3_15', text: '生成电池护照二维码', level: 'mandatory', ref: 'EU 2023/1542 Art.77(5) - 二维码访问要求' }
+            { id: 's3_1', text: '进入「电池护照」模块，录入核心数据（制造商/产品/碳足迹）', level: 'mandatory', ref: '快速模式：5分钟完成6项必填' },
+            { id: 's3_2', text: '根据缺失项分析，优先补齐P0紧急项', level: 'mandatory', ref: '回收料证明/碳足迹核查需尽早启动' },
+            { id: 's3_3', text: '导出JSON数据包备份', level: 'recommended', ref: '数据沉淀，Registry开放后一键导入' },
+            { id: 's3_4', text: '如需完整数据，切换到完整模式继续填写', level: 'recommended', ref: '材料成分/供应商/回收材料等30+项' }
         ]
     },
     {
@@ -1762,7 +1874,7 @@ function startCompliancePlan() {
     // 把自检已完成的项映射到7站任务
     const mapping = {
         'carbon_1': 's2_7', 'carbon_2': 's2_9', 'carbon_3': 's2_11',
-        'passport_1': 's3_1', 'passport_2': 's3_2', 'passport_3': 's3_11',
+        'passport_1': 's3_1', 'passport_2': 's3_3',
         'recycling_1': 's4_2', 'recycling_2': 's4_4', 'recycling_3': 's4_7',
         'diligence_1': 's5_1', 'diligence_2': 's5_3',
         'label_1': 's6_4', 'label_2': 's6_5'
@@ -1774,6 +1886,24 @@ function startCompliancePlan() {
         }
     });
     savePlanProgress();
+    // 上报从自检带入路线图
+    try {
+        fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "roadmap_init",
+                data: {
+                    batteryType: planState.batteryType,
+                    scale: planState.scale,
+                    completedTasks: planState.completedTasks.length,
+                    source: "selfcheck"
+                }
+            }),
+            keepalive: true
+        }).catch(() => {});
+    } catch (e) {}
+
     showPage('plan');
 }
 
@@ -1871,6 +2001,8 @@ function openStation(stationId) {
     planState.currentStation = stationId;
     savePlanProgress();
 
+
+
     document.getElementById('plan-overview').classList.add('hidden');
     document.getElementById('plan-station-detail').classList.remove('hidden');
 
@@ -1880,6 +2012,26 @@ function openStation(stationId) {
     document.getElementById('station-detail-bar').style.width = Math.round((completed / station.tasks.length) * 100) + '%';
 
     let html = '';
+    
+    // 第3站（数据准备）添加电池护照模块入口
+    if (station.id === 3) {
+        html += `
+        <div class="bg-gradient-to-br from-emerald-50 to-blue-50 border border-emerald-100 rounded-xl p-4 mb-4">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <span class="text-lg">🔋</span>
+                </div>
+                <div class="flex-1">
+                    <h4 class="font-bold text-slate-800 text-sm mb-1">电池护照数据录入工具</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-2">无需手动整理Excel，直接在线填写、自动保存、一键导出JSON。</p>
+                    <button type="button" onclick="showPage('passport')" class="text-xs bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-medium hover:bg-emerald-700 transition-colors">
+                        去填写数据 →
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }
+    
     const levelLabels = { mandatory: '🔴 强制', recommended: '🟡 推荐', suggested: '🟢 建议' };
     const levelColors = { mandatory: 'text-red-600 bg-red-50', recommended: 'text-amber-600 bg-amber-50', suggested: 'text-emerald-600 bg-emerald-50' };
     station.tasks.forEach((task, idx) => {
@@ -1909,6 +2061,24 @@ function toggleTask(taskId) {
         planState.completedTasks.push(taskId);
     }
     savePlanProgress();
+    // 上报路线图进度
+    try {
+        fetch("/api/progress", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                type: "roadmap_task",
+                data: {
+                    taskId: taskId,
+                    completed: planState.completedTasks.includes(taskId),
+                    totalCompleted: planState.completedTasks.length,
+                    batteryType: planState.batteryType
+                }
+            }),
+            keepalive: true
+        }).catch(() => {});
+    } catch (e) {}
+
     openStation(planState.currentStation);
 }
 
@@ -2411,6 +2581,10 @@ function showTuiyanResult() {
             </div>
         `;
     }
+    
+    // 显示微信入口
+    const wechatCta = document.getElementById('wechat-cta');
+    if (wechatCta) wechatCta.style.display = 'block';
 
     const container = document.getElementById('ai-result-container');
     container.innerHTML = '';
@@ -3008,7 +3182,1472 @@ function confirmModalAction() {
     if (confirmModalCallback) confirmModalCallback();
     closeConfirmModal();
 }
+
+// ==================== 电池护照模块 ====================
+
+const DPP_FIELDS = [
+    // 制造商信息 (4项)
+    { id: 'manufacturer-name', category: 'manufacturer', key: 'name', required: true },
+    { id: 'manufacturer-address', category: 'manufacturer', key: 'address', required: true },
+    { id: 'manufacturer-email', category: 'manufacturer', key: 'email', required: false },
+    { id: 'manufacturer-eu-rep', category: 'manufacturer', key: 'euRepresentative', required: false },
+    // 产品标识 (7项)
+    { id: 'product-model', category: 'product', key: 'model', required: true },
+    { id: 'product-category', category: 'product', key: 'category', required: true },
+    { id: 'product-capacity', category: 'product', key: 'capacity', required: true },
+    { id: 'product-voltage', category: 'product', key: 'voltage', required: true },
+    { id: 'product-weight', category: 'product', key: 'weight', required: false },
+    { id: 'production-date', category: 'product', key: 'productionDate', required: false },
+    { id: 'factory-address', category: 'product', key: 'factoryAddress', required: false },
+    // 材料成分 (8项)
+    { id: 'cathode-chemistry', category: 'materials', key: 'cathodeChemistry', required: true },
+    { id: 'cathode-cobalt', category: 'materials', key: 'cathodeCobalt', required: false },
+    { id: 'cathode-nickel', category: 'materials', key: 'cathodeNickel', required: false },
+    { id: 'cathode-manganese', category: 'materials', key: 'cathodeManganese', required: false },
+    { id: 'cathode-source', category: 'materials', key: 'cathodeSource', required: false },
+    { id: 'anode-chemistry', category: 'materials', key: 'anodeChemistry', required: false },
+    { id: 'anode-source', category: 'materials', key: 'anodeSource', required: false },
+    { id: 'electrolyte-type', category: 'materials', key: 'electrolyteType', required: false },
+    // 电解液+隔膜合并到材料成分中计数
+    { id: 'electrolyte-source', category: 'materials', key: 'electrolyteSource', required: false },
+    { id: 'separator-material', category: 'materials', key: 'separatorMaterial', required: false },
+    { id: 'separator-source', category: 'materials', key: 'separatorSource', required: false },
+    // 回收材料 (5项)
+    { id: 'recycling-cobalt', category: 'recycling', key: 'cobaltRecycled', required: false },
+    { id: 'recycling-lithium', category: 'recycling', key: 'lithiumRecycled', required: false },
+    { id: 'recycling-nickel', category: 'recycling', key: 'nickelRecycled', required: false },
+    { id: 'recycling-lead', category: 'recycling', key: 'leadRecycled', required: false },
+    { id: 'recycling-supplier-status', category: 'recycling', key: 'supplierStatus', required: false },
+    // 碳足迹 (4项)
+    { id: 'carbon-total', category: 'carbon', key: 'total', required: true },
+    { id: 'carbon-methodology', category: 'carbon', key: 'methodology', required: false },
+    { id: 'carbon-verification', category: 'carbon', key: 'verificationStatus', required: false },
+    { id: 'carbon-grade', category: 'carbon', key: 'grade', required: false },
+];
+
+let dppData = loadDPPData();
+let suppliers = loadSuppliers();
+
+function loadDPPData() {
+    try {
+        const saved = safeLS.getItem('lens_dpp_data');
+        return saved ? JSON.parse(saved) : {};
+    } catch (e) { return {}; }
+}
+
+function saveDPPData() {
+    try { safeLS.setItem('lens_dpp_data', JSON.stringify(dppData)); } catch (e) {}
+}
+
+function loadSuppliers() {
+    try {
+        const saved = safeLS.getItem('lens_dpp_suppliers');
+        return saved ? JSON.parse(saved) : [];
+    } catch (e) { return []; }
+}
+
+function saveSuppliers() {
+    try { safeLS.setItem('lens_dpp_suppliers', JSON.stringify(suppliers)); } catch (e) {}
+}
+
+function saveDPPField(category, key, value) {
+    if (!dppData[category]) dppData[category] = {};
+    dppData[category][key] = value;
+    saveDPPData();
+    updatePassportProgress();
+    
+    // 显示保存反馈
+    const inputEl = document.activeElement;
+    if (inputEl && (inputEl.tagName === 'INPUT' || inputEl.tagName === 'SELECT' || inputEl.tagName === 'TEXTAREA')) {
+        showSaveFeedback(inputEl);
+    }
+}
+
+// 显示保存反馈
+function showSaveFeedback(inputEl) {
+    // 移除已有的反馈
+    const existing = inputEl.parentNode.querySelector('.save-feedback');
+    if (existing) existing.remove();
+    
+    // 创建反馈元素
+    const feedback = document.createElement('div');
+    feedback.className = 'save-feedback absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-emerald-600 text-[11px] font-medium bg-emerald-50 px-2 py-0.5 rounded-full';
+    feedback.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>已保存';
+    
+    // 设置父元素为相对定位
+    inputEl.parentNode.style.position = 'relative';
+    inputEl.parentNode.appendChild(feedback);
+    
+    // 1.5秒后淡出移除
+    setTimeout(() => {
+        feedback.style.opacity = '0';
+        feedback.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => feedback.remove(), 300);
+    }, 1500);
+}
+
+// ==================== 引导卡片 ====================
+function checkPassportGuide() {
+    const guideDismissed = safeLS.getItem('lens_passport_guide_dismissed');
+    const guide = document.getElementById('passport-guide');
+    if (guide && !guideDismissed) {
+        guide.classList.remove('hidden');
+    }
+}
+
+function dismissPassportGuide() {
+    const guide = document.getElementById('passport-guide');
+    if (guide) {
+        guide.style.opacity = '0';
+        guide.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => guide.classList.add('hidden'), 300);
+    }
+    try { safeLS.setItem('lens_passport_guide_dismissed', '1'); } catch (e) {}
+}
+
+// ==================== 快速模式 ====================
+const QUICK_MODE_FIELDS = [
+    // 制造商（2项）
+    'manufacturer-name', 'manufacturer-address',
+    // 产品标识（4项）
+    'product-model', 'product-category', 'product-capacity', 'product-voltage',
+    // 材料成分（2项：正负极化学体系）
+    'cathode-chemistry', 'anode-chemistry',
+    // 回收材料（1项：关键的比例）
+    'recycling-cobalt', 'recycling-lithium',
+    // 碳足迹（1项）
+    'carbon-total'
+];
+
+let passportMode = 'quick'; // quick 或 full
+
+function setPassportMode(mode) {
+    passportMode = mode;
+    
+    // 更新按钮样式
+    const quickBtn = document.getElementById('mode-btn-quick');
+    const fullBtn = document.getElementById('mode-btn-full');
+    
+    if (!quickBtn || !fullBtn) return;
+    
+    if (mode === 'quick') {
+        quickBtn.classList.add('border-emerald-500', 'bg-emerald-50');
+        quickBtn.classList.remove('border-gray-200');
+        fullBtn.classList.remove('border-emerald-500', 'bg-emerald-50');
+        fullBtn.classList.add('border-gray-200');
+    } else {
+        fullBtn.classList.add('border-emerald-500', 'bg-emerald-50');
+        fullBtn.classList.remove('border-gray-200');
+        quickBtn.classList.remove('border-emerald-500', 'bg-emerald-50');
+        quickBtn.classList.add('border-gray-200');
+    }
+    
+    // 实际隐藏/显示字段
+    applyPassportMode();
+    
+    // 重新计算完成度
+    updatePassportProgress();
+}
+
+function applyPassportMode() {
+    // 快速模式下只显示的分类
+    const QUICK_CATEGORIES = ['manufacturer', 'product', 'carbon'];
+    
+    // 1. 处理分类导航按钮
+    document.querySelectorAll('.passport-cat-btn').forEach(btn => {
+        const catMatch = btn.getAttribute('onclick')?.match(/showPassportCategory\('(\w+)'\)/);
+        if (!catMatch) return;
+        const cat = catMatch[1];
+        
+        if (passportMode === 'quick') {
+            if (QUICK_CATEGORIES.includes(cat)) {
+                btn.style.display = '';
+            } else {
+                btn.style.display = 'none';
+            }
+        } else {
+            btn.style.display = '';
+        }
+    });
+    
+    // 2. 处理分类内容区域
+    document.querySelectorAll('.passport-category').forEach(el => {
+        const catId = el.id?.replace('passport-cat-', '');
+        if (!catId) return;
+        
+        if (passportMode === 'quick') {
+            if (QUICK_CATEGORIES.includes(catId)) {
+                // 不在这里切换显示/隐藏，由showPassportCategory控制
+            } else {
+                el.classList.add('hidden');
+            }
+        } else {
+            el.classList.remove('hidden');
+        }
+    });
+    
+    // 3. 处理具体字段的显示/隐藏
+    DPP_FIELDS.forEach(f => {
+        const el = document.getElementById('dpp-' + f.id);
+        if (!el) return;
+        
+        let container = el.closest('div.space-y-4 > div, div.space-y-3 > div, div.grid > div');
+        if (!container) container = el.parentNode;
+        
+        if (passportMode === 'quick') {
+            if (QUICK_MODE_FIELDS.includes(f.id)) {
+                container.style.display = '';
+            } else {
+                container.style.display = 'none';
+            }
+        } else {
+            container.style.display = '';
+        }
+    });
+}
+
+// ==================== 下一步建议 ====================
+    
+    let completed = 0, total = activeFields.length;
+    activeFields.forEach(f => {
+        const val = dppData[f.category]?.[f.key];
+        if (val && String(val).trim() !== '') completed++;
+    });
+    
+    // 供应商单独计数（仅在完整模式）
+    if (passportMode === 'full') {
+        const supplierCount = suppliers.length;
+        if (supplierCount > 0) { completed++; }
+        total++; 
+    }
+    
+    const pct = Math.round((completed / total) * 100);
+    
+    const bar = document.getElementById('passport-progress-bar');
+    const text = document.getElementById('passport-progress-text');
+    const completedEl = document.getElementById('passport-completed-count');
+    const pendingEl = document.getElementById('passport-pending-count');
+    const naEl = document.getElementById('passport-na-count');
+    
+    if (bar) bar.style.width = pct + '%';
+    if (text) text.textContent = pct + '%';
+    if (completedEl) completedEl.textContent = completed;
+    if (pendingEl) pendingEl.textContent = total - completed;
+    if (naEl) naEl.textContent = '0';
+    
+    // 更新缺失项分析
+    renderGapAnalysis();
+    
+    // 更新缺失项分析按钮的可见性（只在有数据后显示）
+    const hasStarted = completed > 0;
+    const gapToggleBtn = document.getElementById('gap-toggle-btn');
+    if (gapToggleBtn) {
+        if (hasStarted) {
+            gapToggleBtn.style.display = '';
+        } else {
+            gapToggleBtn.style.display = 'none';
+        }
+    }
+}
+
+// ==================== 缺失项分析 ====================
+
+const GAP_RULES = [
+    // P0: 周期长 + 外部依赖 + deadline近
+    { field: 'recycling-cobalt', category: 'recycling', key: 'cobaltRecycled', priority: 'P0', title: '回收钴比例证明', reason: '需供应商提供第三方证明，沟通周期长', leadTime: '2-4周', deadline: '2027-02-18', action: '今天发邮件给正极供应商，索要回收料比例证明' },
+    { field: 'recycling-lithium', category: 'recycling', key: 'lithiumRecycled', priority: 'P0', title: '回收锂比例证明', reason: '需供应商提供第三方证明，沟通周期长', leadTime: '2-4周', deadline: '2027-02-18', action: '今天发邮件给正极供应商，索要回收料比例证明' },
+    { field: 'recycling-nickel', category: 'recycling', key: 'nickelRecycled', priority: 'P0', title: '回收镍比例证明', reason: '需供应商提供第三方证明，沟通周期长', leadTime: '2-4周', deadline: '2027-02-18', action: '今天发邮件给正极供应商，索要回收料比例证明' },
+    { field: 'carbon-total', category: 'carbon', key: 'total', priority: 'P0', title: '碳足迹核算与核查', reason: '第三方机构审核排队，周期长', leadTime: '4-6周', deadline: '2027-02-18', action: '立即联系SGS/TÜV/CQC预约碳足迹核查' },
+    { field: 'manufacturer-name', category: 'manufacturer', key: 'name', priority: 'P0', title: '制造商名称', reason: '核心必填项，所有后续流程依赖', leadTime: '即时', deadline: '2027-02-18', action: '确认公司注册名称（与营业执照一致）' },
+    { field: 'manufacturer-address', category: 'manufacturer', key: 'address', priority: 'P0', title: '制造商注册地址', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '确认公司注册地址' },
+    { field: 'product-model', category: 'product', key: 'model', priority: 'P0', title: '产品型号', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '确认电池产品型号命名' },
+    { field: 'product-category', category: 'product', key: 'category', priority: 'P0', title: '电池类别', reason: '决定适用法规条款', leadTime: '即时', deadline: '2027-02-18', action: '确认属于EV/LMT/工业电池哪一类' },
+    { field: 'product-capacity', category: 'product', key: 'capacity', priority: 'P0', title: '额定容量', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '从产品规格书获取额定容量(Ah)' },
+    { field: 'product-voltage', category: 'product', key: 'voltage', priority: 'P0', title: '额定电压', reason: '核心必填项', leadTime: '即时', deadline: '2027-02-18', action: '从产品规格书获取额定电压(V)' },
+    { field: 'cathode-chemistry', category: 'materials', key: 'cathodeChemistry', priority: 'P0', title: '正极化学体系', reason: '决定材料成分和回收要求', leadTime: '即时', deadline: '2027-02-18', action: '确认正极材料化学体系（NCM811/LFP等）' },
+    
+    // P1: 需要内部协调或技术评估
+    { field: 'bms-interface', category: 'product', key: 'bmsInterface', priority: 'P1', title: 'BMS数据接口能力', reason: '涉及产线改造，需技术评估', leadTime: '3-6个月', deadline: '2027-02-18', action: '联系BMS厂商评估MQTT/OPC-UA协议支持' },
+    { field: 'cathode-source', category: 'materials', key: 'cathodeSource', priority: 'P1', title: '正极材料供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认正极材料供应商名称和产地' },
+    { field: 'anode-source', category: 'materials', key: 'anodeSource', priority: 'P1', title: '负极材料供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认负极材料供应商名称和产地' },
+    { field: 'electrolyte-source', category: 'materials', key: 'electrolyteSource', priority: 'P1', title: '电解液供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认电解液供应商名称和产地' },
+    { field: 'separator-source', category: 'materials', key: 'separatorSource', priority: 'P1', title: '隔膜供应商', reason: '供应链追溯要求', leadTime: '1-2周', deadline: '2027-02-18', action: '确认隔膜供应商名称和产地' },
+    { field: 'carbon-verification', category: 'carbon', key: 'verificationStatus', priority: 'P1', title: '碳足迹核查状态', reason: '决定报告可信度', leadTime: '4-6周', deadline: '2027-02-18', action: '如未核查，尽快联系认证机构' },
+    { field: 'recycling-supplier-status', category: 'recycling', key: 'supplierStatus', priority: 'P1', title: '供应商回收料配合度', reason: '决定是否能获取回收证明', leadTime: '2-4周', deadline: '2027-02-18', action: '评估核心供应商的配合意愿和能力' },
+    
+    // P2: 纯行政流程，可快速完成
+    { field: 'manufacturer-eu-rep', category: 'manufacturer', key: 'euRepresentative', priority: 'P2', title: 'EU授权代表', reason: '非欧盟企业需指定，可委托第三方', leadTime: '1-2周', deadline: '2027-02-18', action: '联系欧盟授权代表服务机构' },
+    { field: 'manufacturer-email', category: 'manufacturer', key: 'email', priority: 'P2', title: '联系人邮箱', reason: '常规信息', leadTime: '即时', deadline: '2027-02-18', action: '填写合规负责人邮箱' },
+    { field: 'product-weight', category: 'product', key: 'weight', priority: 'P2', title: '电池质量', reason: '常规技术参数', leadTime: '即时', deadline: '2027-02-18', action: '从产品规格书获取质量(kg)' },
+    { field: 'production-date', category: 'product', key: 'productionDate', priority: 'P2', title: '生产日期', reason: '批次信息', leadTime: '即时', deadline: '2027-02-18', action: '确认生产日期' },
+    { field: 'factory-address', category: 'product', key: 'factoryAddress', priority: 'P2', title: '制造工厂地址', reason: '生产地信息', leadTime: '即时', deadline: '2027-02-18', action: '确认实际生产工厂地址' },
+    { field: 'carbon-methodology', category: 'carbon', key: 'methodology', priority: 'P2', title: '碳足迹计算方法学', reason: '方法论说明', leadTime: '即时', deadline: '2027-02-18', action: '确认使用的计算方法学（JRC/ISO14067）' },
+    { field: 'carbon-grade', category: 'carbon', key: 'grade', priority: 'P2', title: '碳足迹等级自评', reason: 'EU官方阈值尚未公布', leadTime: '待定', deadline: '2027-02-18', action: '等EU官方阈值公布后更新' },
+    { field: 'cathode-cobalt', category: 'materials', key: 'cathodeCobalt', priority: 'P2', title: '正极钴含量', reason: '技术参数，有COA即可获取', leadTime: '即时', deadline: '2027-02-18', action: '从供应商COA获取含量数据' },
+    { field: 'cathode-nickel', category: 'materials', key: 'cathodeNickel', priority: 'P2', title: '正极镍含量', reason: '技术参数，有COA即可获取', leadTime: '即时', deadline: '2027-02-18', action: '从供应商COA获取含量数据' },
+    { field: 'cathode-manganese', category: 'materials', key: 'cathodeManganese', priority: 'P2', title: '正极锰含量', reason: '技术参数，有COA即可获取', leadTime: '即时', deadline: '2027-02-18', action: '从供应商COA获取含量数据' },
+    { field: 'anode-chemistry', category: 'materials', key: 'anodeChemistry', priority: 'P2', title: '负极化学体系', reason: '技术参数', leadTime: '即时', deadline: '2027-02-18', action: '确认负极材料类型（石墨/硅基等）' },
+    { field: 'electrolyte-type', category: 'materials', key: 'electrolyteType', priority: 'P2', title: '电解液类型', reason: '技术参数', leadTime: '即时', deadline: '2027-02-18', action: '确认电解液类型（液态/固态/凝胶）' },
+    { field: 'separator-material', category: 'materials', key: 'separatorMaterial', priority: 'P2', title: '隔膜材质', reason: '技术参数', leadTime: '即时', deadline: '2027-02-18', action: '确认隔膜材质（PE/PP/陶瓷涂层）' },
+    { field: 'recycling-lead', category: 'recycling', key: 'leadRecycled', priority: 'P2', title: '回收铅比例', reason: '仅铅酸电池适用', leadTime: '2-4周', deadline: '2027-02-18', action: '如为铅酸电池，联系供应商获取证明' },
+];
+
+function updatePassportProgress() {
+    // 根据模式确定要统计的字段
+    const activeFields = passportMode === 'quick' 
+        ? DPP_FIELDS.filter(f => QUICK_MODE_FIELDS.includes(f.id))
+        : DPP_FIELDS;
+    
+    let completed = 0, total = activeFields.length;
+    activeFields.forEach(f => {
+        const val = dppData[f.category]?.[f.key];
+        if (val && String(val).trim() !== '') completed++;
+    });
+    
+    // 供应商单独计数（仅在完整模式）
+    if (passportMode === 'full') {
+        const supplierCount = suppliers.length;
+        if (supplierCount > 0) { completed++; }
+        total++; 
+    }
+    
+    const pct = Math.round((completed / total) * 100);
+    
+    const bar = document.getElementById('passport-progress-bar');
+    const text = document.getElementById('passport-progress-text');
+    const completedEl = document.getElementById('passport-completed-count');
+    const pendingEl = document.getElementById('passport-pending-count');
+    const naEl = document.getElementById('passport-na-count');
+    
+    if (bar) bar.style.width = pct + '%';
+    if (text) text.textContent = pct + '%';
+    if (completedEl) completedEl.textContent = completed;
+    if (pendingEl) pendingEl.textContent = total - completed;
+    if (naEl) naEl.textContent = '0';
+    
+    // 更新缺失项分析
+    renderGapAnalysis();
+    
+    // 更新缺失项分析按钮的可见性（只在有数据后显示）
+    const hasStarted = completed > 0;
+    const gapToggleBtn = document.getElementById('gap-toggle-btn');
+    if (gapToggleBtn) {
+        if (hasStarted) {
+            gapToggleBtn.style.display = '';
+        } else {
+            gapToggleBtn.style.display = 'none';
+        }
+    }
+}
+
+function renderGapAnalysis() {
+    const container = document.getElementById('passport-gap-analysis');
+    if (!container) return;
+    
+    const p0List = [];
+    const p1List = [];
+    const p2List = [];
+    
+    // 根据模式过滤 GAP_RULES
+    const activeRules = passportMode === 'quick'
+        ? GAP_RULES.filter(rule => QUICK_MODE_FIELDS.includes(rule.field))
+        : GAP_RULES;
+    
+    activeRules.forEach(rule => {
+        const val = dppData[rule.category]?.[rule.key];
+        const isFilled = val && String(val).trim() !== '';
+        
+        // 特殊处理供应商
+        if (rule.field === 'bms-interface') {
+            // BMS接口是特殊字段，检查是否有相关数据
+            const hasBMS = dppData.product?.bmsInterface || dppData.product?.category === 'ev' || dppData.product?.category === 'lmt';
+            if (!hasBMS) return; // 还没选电池类型，不显示
+        }
+        
+        if (!isFilled) {
+            const item = { ...rule };
+            // 快速模式下调整优先级显示
+            if (passportMode === 'quick' && item.priority !== 'P0') {
+                item.priority = 'P0'; // 快速模式下所有未填项都是P0（因为都是核心）
+            }
+            if (item.priority === 'P0') p0List.push(item);
+            else if (item.priority === 'P1') p1List.push(item);
+            else p2List.push(item);
+        }
+    });
+    
+    // 供应商单独检查（仅在完整模式）
+    if (passportMode === 'full' && suppliers.length === 0) {
+        p1List.push({
+            title: '核心供应商清单',
+            reason: 'EU Art.48要求供应链透明度',
+            leadTime: '1-2周',
+            deadline: '2027-02-18',
+            action: '在「供应商」标签页添加至少1家核心供应商'
+        });
+    }
+    
+    const totalGaps = p0List.length + p1List.length + p2List.length;
+    
+    // 更新按钮摘要
+    const summaryEl = document.getElementById('gap-summary-text');
+    const badgeEl = document.getElementById('gap-badge');
+    if (summaryEl && badgeEl) {
+        if (totalGaps === 0) {
+            summaryEl.textContent = passportMode === 'quick' ? '快速模式核心项已填完' : '核心数据已填写完整';
+            badgeEl.textContent = '已完成';
+            badgeEl.className = 'px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[10px] font-bold rounded-full';
+        } else {
+            const modeLabel = passportMode === 'quick' ? '（快速模式）' : '';
+            summaryEl.textContent = `还有 ${totalGaps} 项待填写${modeLabel}，点击查看优先级和行动建议`;
+            if (p0List.length > 0) {
+                badgeEl.textContent = `${p0List.length} 项紧急`;
+                badgeEl.className = 'px-2 py-0.5 bg-red-100 text-red-600 text-[10px] font-bold rounded-full';
+            } else if (p1List.length > 0) {
+                badgeEl.textContent = `${p1List.length} 项重要`;
+                badgeEl.className = 'px-2 py-0.5 bg-amber-100 text-amber-600 text-[10px] font-bold rounded-full';
+            } else {
+                badgeEl.textContent = `${p2List.length} 项待办`;
+                badgeEl.className = 'px-2 py-0.5 bg-emerald-100 text-emerald-600 text-[10px] font-bold rounded-full';
+            }
+        }
+    }
+    
+    // 默认不展开面板，只更新按钮状态
+    // 面板内容保持渲染，但可见性由toggleGapAnalysis控制
+    
+    if (totalGaps === 0) {
+        const allDone = document.getElementById('gap-all-done');
+        if (allDone) allDone.classList.remove('hidden');
+        ['gap-p0', 'gap-p1', 'gap-p2'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        return;
+    }
+    
+    const allDone = document.getElementById('gap-all-done');
+    if (allDone) allDone.classList.add('hidden');
+    
+    // 渲染P0
+    const p0Container = document.getElementById('gap-p0');
+    const p0ListEl = document.getElementById('gap-p0-list');
+    if (p0List.length > 0) {
+        p0Container.classList.remove('hidden');
+        p0ListEl.innerHTML = p0List.map(item => `
+            <div class="bg-white rounded-lg p-3 border border-red-100">
+                <div class="flex items-start justify-between mb-1">
+                    <span class="text-sm font-bold text-red-700">${item.title}</span>
+                    <span class="text-[10px] text-red-500 bg-red-50 px-1.5 py-0.5 rounded">${item.leadTime}</span>
+                </div>
+                <p class="text-xs text-red-600 mb-1">${item.reason}</p>
+                <div class="flex items-center gap-1 text-[10px] text-amber-600">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    截止：${item.deadline}
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1.5 bg-slate-50 p-2 rounded">💡 ${item.action}</p>
+            </div>
+        `).join('');
+    } else {
+        p0Container.classList.add('hidden');
+    }
+    
+    // 渲染P1
+    const p1Container = document.getElementById('gap-p1');
+    const p1ListEl = document.getElementById('gap-p1-list');
+    if (p1List.length > 0) {
+        p1Container.classList.remove('hidden');
+        p1ListEl.innerHTML = p1List.map(item => `
+            <div class="bg-white rounded-lg p-3 border border-amber-100">
+                <div class="flex items-start justify-between mb-1">
+                    <span class="text-sm font-bold text-amber-700">${item.title}</span>
+                    <span class="text-[10px] text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded">${item.leadTime}</span>
+                </div>
+                <p class="text-xs text-amber-600 mb-1">${item.reason}</p>
+                <div class="flex items-center gap-1 text-[10px] text-amber-600">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    建议完成：${item.deadline}
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1.5 bg-slate-50 p-2 rounded">💡 ${item.action}</p>
+            </div>
+        `).join('');
+    } else {
+        p1Container.classList.add('hidden');
+    }
+    
+    // 渲染P2
+    const p2Container = document.getElementById('gap-p2');
+    const p2ListEl = document.getElementById('gap-p2-list');
+    if (p2List.length > 0) {
+        p2Container.classList.remove('hidden');
+        p2ListEl.innerHTML = p2List.map(item => `
+            <div class="bg-white rounded-lg p-3 border border-emerald-100">
+                <div class="flex items-start justify-between mb-1">
+                    <span class="text-sm font-bold text-emerald-700">${item.title}</span>
+                    <span class="text-[10px] text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">${item.leadTime}</span>
+                </div>
+                <p class="text-xs text-emerald-600 mb-1">${item.reason}</p>
+                <p class="text-[11px] text-slate-500 mt-1.5 bg-slate-50 p-2 rounded">💡 ${item.action}</p>
+            </div>
+        `).join('');
+    } else {
+        p2Container.classList.add('hidden');
+    }
+}
+
+function toggleGapAnalysis() {
+    const panel = document.getElementById('passport-gap-analysis');
+    const arrow = document.getElementById('gap-arrow');
+    if (!panel) return;
+    
+    if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+        panel.classList.add('hidden');
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    }
+}
+
+
+function showPassportCategory(cat) {
+    document.querySelectorAll('.passport-category').forEach(el => el.classList.add('hidden'));
+    const target = document.getElementById('passport-cat-' + cat);
+    if (target) target.classList.remove('hidden');
+    
+    document.querySelectorAll('.passport-cat-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-emerald-600', 'text-white');
+        btn.classList.add('bg-white', 'text-slate-600', 'border', 'border-gray-200');
+    });
+    const activeBtn = document.querySelector('.passport-cat-btn[onclick="showPassportCategory(\'' + cat + '\')"]');
+    if (activeBtn) {
+        activeBtn.classList.add('active', 'bg-emerald-600', 'text-white');
+        activeBtn.classList.remove('bg-white', 'text-slate-600', 'border', 'border-gray-200');
+    }
+}
+
+function addSupplier() {
+    const id = Date.now();
+    suppliers.push({ id, name: '', component: '', country: '', certification: '' });
+    saveSuppliers();
+    renderSuppliers();
+    updatePassportProgress();
+}
+
+function removeSupplier(id) {
+    suppliers = suppliers.filter(s => s.id !== id);
+    saveSuppliers();
+    renderSuppliers();
+    updatePassportProgress();
+}
+
+function updateSupplier(id, field, value) {
+    const s = suppliers.find(s => s.id === id);
+    if (s) { s[field] = value; saveSuppliers(); updatePassportProgress(); }
+}
+
+function renderSuppliers() {
+    const container = document.getElementById('suppliers-list');
+    if (!container) return;
+    
+    if (suppliers.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">暂无供应商，点击上方按钮添加</p>';
+        return;
+    }
+    
+    container.innerHTML = suppliers.map((s, idx) => `
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-xs font-medium text-slate-500">供应商 #${idx + 1}</span>
+                <button type="button" onclick="removeSupplier(${s.id})" class="text-xs text-red-400 hover:text-red-600">删除</button>
+            </div>
+            <div class="space-y-2">
+                <input type="text" value="${escapeHtml(s.name)}" placeholder="供应商名称" 
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                    onchange="updateSupplier(${s.id}, 'name', this.value)">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="text" value="${escapeHtml(s.component)}" placeholder="供应部件" 
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                        onchange="updateSupplier(${s.id}, 'component', this.value)">
+                    <input type="text" value="${escapeHtml(s.country)}" placeholder="国家/地区" 
+                        class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500"
+                        onchange="updateSupplier(${s.id}, 'country', this.value)">
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showPassportPreview() {
+    const modal = document.getElementById('passport-preview-modal');
+    if (!modal) return;
+    
+    // 填充预览数据
+    const prod = dppData.product || {};
+    const mfr = dppData.manufacturer || {};
+    const mat = dppData.materials || {};
+    const carb = dppData.carbon || {};
+    
+    document.getElementById('preview-model').textContent = prod.model || '--';
+    document.getElementById('preview-manufacturer').textContent = mfr.name || '--';
+    document.getElementById('preview-battery-type').textContent = (prod.category || 'EV').toUpperCase();
+    document.getElementById('preview-capacity').textContent = (prod.capacity || '--') + ' Ah';
+    document.getElementById('preview-voltage').textContent = (prod.voltage || '--') + ' V';
+    
+    // 完成度
+    let completed = 0, total = DPP_FIELDS.length + 1;
+    DPP_FIELDS.forEach(f => {
+        const val = dppData[f.category]?.[f.key];
+        if (val && String(val).trim() !== '') completed++;
+    });
+    if (suppliers.length > 0) completed++;
+    const pct = Math.round((completed / total) * 100);
+    document.getElementById('preview-completeness').textContent = pct + '%';
+    document.getElementById('preview-completeness-bar').style.width = pct + '%';
+    
+    // 材料成分
+    const materialsHtml = [];
+    if (mat.cathodeChemistry) materialsHtml.push(`<div class="flex justify-between"><span class="text-slate-500">正极</span><span class="font-medium">${mat.cathodeChemistry}</span></div>`);
+    if (mat.anodeChemistry) materialsHtml.push(`<div class="flex justify-between"><span class="text-slate-500">负极</span><span class="font-medium">${mat.anodeChemistry}</span></div>`);
+    if (mat.electrolyteType) materialsHtml.push(`<div class="flex justify-between"><span class="text-slate-500">电解液</span><span class="font-medium">${mat.electrolyteType}</span></div>`);
+    if (mat.separatorMaterial) materialsHtml.push(`<div class="flex justify-between"><span class="text-slate-500">隔膜</span><span class="font-medium">${mat.separatorMaterial}</span></div>`);
+    document.getElementById('preview-materials').innerHTML = materialsHtml.length ? materialsHtml.join('') : '<p class="text-slate-400 text-xs">暂无数据</p>';
+    
+    // 碳足迹
+    if (carb.total) {
+        document.getElementById('preview-carbon').innerHTML = `
+            <div class="flex justify-between items-center">
+                <span class="text-slate-500">总碳足迹</span>
+                <span class="font-bold text-emerald-600">${carb.total} kgCO₂e/kWh</span>
+            </div>
+            ${carb.grade ? `<div class="flex justify-between mt-1"><span class="text-slate-500">等级</span><span class="font-medium">${carb.grade}</span></div>` : ''}
+            ${carb.verificationStatus === 'verified' ? '<div class="mt-2 text-xs text-emerald-600">✅ 已通过第三方核查</div>' : ''}
+        `;
+    } else {
+        document.getElementById('preview-carbon').innerHTML = '<p class="text-slate-400 text-xs">暂无数据</p>';
+    }
+    
+    // 缺失项
+    const missing = [];
+    if (!mfr.name) missing.push('制造商名称');
+    if (!mfr.address) missing.push('制造商地址');
+    if (!prod.model) missing.push('产品型号');
+    if (!prod.category) missing.push('电池类别');
+    if (!prod.capacity) missing.push('额定容量');
+    if (!prod.voltage) missing.push('额定电压');
+    if (!mat.cathodeChemistry) missing.push('正极化学体系');
+    if (!carb.total) missing.push('碳足迹数值');
+    
+    const missingList = document.getElementById('preview-missing-list');
+    if (missing.length === 0) {
+        missingList.innerHTML = '<li>✅ 核心数据已填写完整</li>';
+    } else {
+        missingList.innerHTML = missing.map(m => `<li>• ${m}</li>`).join('');
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closePassportPreview() {
+    const modal = document.getElementById('passport-preview-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function exportDPPData() {
+    const exportData = {
+        version: '1.0',
+        exportTime: new Date().toISOString(),
+        type: 'DigitalBatteryPassport-MVP',
+        note: '此数据为合规透镜MVP版本导出，非正式DPP格式。Registry开放后可升级转换。',
+        data: dppData,
+        suppliers: suppliers,
+        completeness: {
+            staticFields: DPP_FIELDS.length,
+            completed: DPP_FIELDS.filter(f => dppData[f.category]?.[f.key] && String(dppData[f.category][f.key]).trim() !== '').length,
+            suppliers: suppliers.length
+        }
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `battery-passport-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('JSON数据已导出');
+}
+
+function restoreDPPFields() {
+    // 恢复表单字段值
+    DPP_FIELDS.forEach(f => {
+        const el = document.getElementById('dpp-' + f.id);
+        if (el && dppData[f.category] && dppData[f.category][f.key] !== undefined) {
+            el.value = dppData[f.category][f.key];
+        }
+    });
+    renderSuppliers();
+    
+    // 检查引导卡片
+    checkPassportGuide();
+    
+    // 检查是否有数据
+    const hasData = Object.keys(dppData).some(cat => Object.keys(dppData[cat] || {}).length > 0);
+    
+    if (hasData) {
+        // 用户已有数据，禁用模式选择器，根据已填写数量判断模式
+        const selector = document.getElementById('passport-mode-selector');
+        if (selector) {
+            selector.style.opacity = '0.5';
+            selector.style.pointerEvents = 'none';
+        }
+        const filledCount = DPP_FIELDS.filter(f => {
+            const val = dppData[f.category]?.[f.key];
+            return val && String(val).trim() !== '';
+        }).length;
+        if (filledCount > 6) {
+            passportMode = 'full';
+        } else {
+            passportMode = 'quick';
+        }
+    } else {
+        // 新用户，默认快速模式
+        passportMode = 'quick';
+        // 隐藏缺失项分析按钮（用户还没开始填）
+        const gapToggleBtn = document.getElementById('gap-toggle-btn');
+        if (gapToggleBtn) gapToggleBtn.style.display = 'none';
+        // 隐藏下一步建议
+        const nextStepEl = document.getElementById('passport-next-step');
+        if (nextStepEl) nextStepEl.classList.add('hidden');
+    }
+    
+    // 应用模式（隐藏/显示字段）
+    applyPassportMode();
+    // 更新按钮样式
+    setPassportMode(passportMode);
+    
+    // 确保显示第一个可见分类并滚动到顶部
+    showPassportCategory('manufacturer');
+    window.scrollTo(0, 0);
+    
+    updatePassportProgress();
+}
+
+// 修改showPage函数支持passport
+const originalShowPage = showPage;
+showPage = function(page) {
+    if (page === 'passport') {
+        // 页面切换前记录
+        const duration = Math.round((Date.now() - pageEnterTime) / 1000);
+        if (duration > 0 && currentPageName !== page) {
+            trackPageExit(currentPageName, duration);
+        }
+        
+        ['home', 'check', 'ai', 'plan', 'passport'].forEach(p => {
+            const el = document.getElementById('page-' + p);
+            if (el) el.classList.add('hidden');
+        });
+        const target = document.getElementById('page-passport');
+        if (target) {
+            target.classList.remove('hidden');
+            restoreDPPFields();
+        }
+        
+        window.scrollTo(0, 0);
+        
+        if (currentPageName !== page) {
+            currentPageName = page;
+            pageEnterTime = Date.now();
+            trackPageView(page);
+        }
+        
+        const subtitle = document.getElementById('header-subtitle');
+        if (subtitle) subtitle.textContent = '电池护照';
+        return;
+    }
+    
+    // 从护照页面切换到其他页面时，确保护照页面被隐藏
+    const passportEl = document.getElementById('page-passport');
+    if (passportEl) passportEl.classList.add('hidden');
+    
+    return originalShowPage(page);
+};
+
+// 页面加载时恢复数据
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreDPPFields);
+} else {
+    restoreDPPFields();
+}
+
+
 </script>
+
+<!-- ============ 电池护照页面 ============ -->
+<div id="page-passport" class="hidden min-h-screen bg-[#fafafa]">
+    <!-- 顶部导航 -->
+    <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <div class="max-w-lg mx-auto px-5 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="showPage('home')" class="text-gray-500 p-1 hover:text-emerald-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <div>
+                    <h2 class="text-base font-bold text-slate-800">电池护照</h2>
+                    <p class="text-[10px] text-slate-400">EU Digital Battery Passport</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="exportDPPData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg transition-colors font-medium">
+                    导出JSON
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引导卡片（首次进入显示，可关闭） -->
+    <div id="passport-guide" class="max-w-lg mx-auto px-5 pt-4 pb-2 hidden">
+        <div class="bg-gradient-to-br from-emerald-50 to-blue-50 border border-emerald-100 rounded-2xl p-5 shadow-sm relative">
+            <button type="button" onclick="dismissPassportGuide()" class="absolute top-3 right-3 w-6 h-6 rounded-full bg-white/80 flex items-center justify-center text-slate-400 hover:text-slate-600 transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="text-lg">🔋</span>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800 text-sm mb-1">电池护照数据准备工具</h3>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-2">
+                        EU要求2027年2月起，所有出口欧盟的电池必须配备数字护照。现在Registry还没开放注册，但你可以提前把数据准备好。
+                    </p>
+                    <div class="bg-white/60 rounded-lg p-2.5 mb-2">
+                        <p class="text-[11px] text-slate-500 leading-relaxed">
+                            <strong>📋 合规路线图（56步）</strong> = 从"我不知道做什么"到"我合规了"的<strong>完整行动清单</strong>，包括数据准备、BMS改造、认证审核等。<br><br>
+                            <strong>🔋 电池护照（71项）</strong> = 具体要填报的<strong>数据字段</strong>，是56步中第3站的核心交付物。
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 text-[11px]">
+                        <span class="flex items-center gap-1 text-emerald-700">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            填完→等Registry开放→一键上传
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 完成度概览 -->
+    <div class="max-w-lg mx-auto px-5 pt-5 pb-3">
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="font-bold text-slate-800">数据录入进度</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">基于 EU 电池护照指南 V2.0（71项数据点）</p>
+                </div>
+                <div class="text-right">
+                    <span id="passport-progress-text" class="text-2xl font-bold text-emerald-600">0%</span>
+                    <p class="text-[10px] text-slate-400">静态数据完成度</p>
+                </div>
+            </div>
+            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden mb-4">
+                <div id="passport-progress-bar" class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-emerald-50 rounded-lg p-2">
+                    <div id="passport-completed-count" class="text-lg font-bold text-emerald-700">0</div>
+                    <div class="text-[10px] text-emerald-600">已填写</div>
+                </div>
+                <div class="bg-orange-50 rounded-lg p-2">
+                    <div id="passport-pending-count" class="text-lg font-bold text-orange-700">30</div>
+                    <div class="text-[10px] text-orange-600">待填写</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-2">
+                    <div id="passport-na-count" class="text-lg font-bold text-slate-600">0</div>
+                    <div class="text-[10px] text-slate-500">不适用</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速模式选择 -->
+    <div id="passport-mode-selector" class="max-w-lg mx-auto px-5 pb-3">
+        <div class="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+            <h3 class="font-bold text-slate-700 text-sm mb-3">选择填写方式</h3>
+            <div class="space-y-2">
+                <button type="button" onclick="setPassportMode('quick')" id="mode-btn-quick" class="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-emerald-500 bg-emerald-50 text-left transition-colors">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-lg">⚡</span>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">快速模式（推荐）</div>
+                        <div class="text-[11px] text-slate-500">只填6项核心必填项，5分钟摸清家底</div>
+                    </div>
+                </button>
+                <button type="button" onclick="setPassportMode('full')" id="mode-btn-full" class="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-gray-200 text-left transition-colors hover:border-gray-300">
+                    <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-lg">📋</span>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">完整模式</div>
+                        <div class="text-[11px] text-slate-500">填写全部30+项静态数据，一次到位</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 缺失项分析控制 -->
+    <div class="max-w-lg mx-auto px-5 pb-3">
+        <button type="button" id="gap-toggle-btn" onclick="toggleGapAnalysis()" class="w-full bg-white border border-gray-200 rounded-2xl p-4 shadow-sm flex items-center justify-between hover:border-emerald-300 transition-colors">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <div class="text-left">
+                    <h3 class="font-bold text-slate-700 text-sm">缺失项分析</h3>
+                    <p id="gap-summary-text" class="text-[11px] text-slate-400 mt-0.5">点击查看待填写项的优先级和行动建议</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span id="gap-badge" class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-full">待分析</span>
+                <svg id="gap-arrow" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+        </button>
+        
+        <div id="passport-gap-analysis" class="hidden mt-3">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    缺失项分析
+                </h3>
+                <span class="text-[10px] text-slate-400">基于 2027-02-18 deadline 倒推</span>
+            </div>
+            
+            <!-- P0 紧急 -->
+            <div id="gap-p0" class="hidden mb-3">
+                <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">P0</span>
+                        <span class="text-sm font-bold text-red-700">紧急 — 2周内必须启动</span>
+                    </div>
+                    <div id="gap-p0-list" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- P1 重要 -->
+            <div id="gap-p1" class="hidden mb-3">
+                <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-0.5 bg-amber-500 text-white text-[10px] font-bold rounded">P1</span>
+                        <span class="text-sm font-bold text-amber-700">重要 — 1个月内建议完成</span>
+                    </div>
+                    <div id="gap-p1-list" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- P2 待办 -->
+            <div id="gap-p2" class="hidden mb-3">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="px-2 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded">P2</span>
+                        <span class="text-sm font-bold text-emerald-700">待办 — Registry开放前完成</span>
+                    </div>
+                    <div id="gap-p2-list" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- 全部完成 -->
+            <div id="gap-all-done" class="hidden mb-3">
+                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-center">
+                    <div class="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <p class="text-sm font-bold text-emerald-700">🎉 核心数据已填写完整</p>
+                    <p class="text-xs text-emerald-600 mt-1">等Registry开放后，即可生成正式DPP数据包</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类导航 -->
+    <div class="max-w-lg mx-auto px-5 pb-3">
+        <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" id="passport-category-nav">
+            <button type="button" onclick="showPassportCategory('manufacturer')" class="passport-cat-btn active px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-full whitespace-nowrap transition-colors">制造商</button>
+            <button type="button" onclick="showPassportCategory('product')" class="passport-cat-btn px-3 py-1.5 bg-white text-slate-600 border border-gray-200 text-xs font-medium rounded-full whitespace-nowrap transition-colors">产品标识</button>
+            <button type="button" onclick="showPassportCategory('materials')" class="passport-cat-btn px-3 py-1.5 bg-white text-slate-600 border border-gray-200 text-xs font-medium rounded-full whitespace-nowrap transition-colors">材料成分</button>
+            <button type="button" onclick="showPassportCategory('recycling')" class="passport-cat-btn px-3 py-1.5 bg-white text-slate-600 border border-gray-200 text-xs font-medium rounded-full whitespace-nowrap transition-colors">回收材料</button>
+            <button type="button" onclick="showPassportCategory('carbon')" class="passport-cat-btn px-3 py-1.5 bg-white text-slate-600 border border-gray-200 text-xs font-medium rounded-full whitespace-nowrap transition-colors">碳足迹</button>
+            <button type="button" onclick="showPassportCategory('suppliers')" class="passport-cat-btn px-3 py-1.5 bg-white text-slate-600 border border-gray-200 text-xs font-medium rounded-full whitespace-nowrap transition-colors">供应商</button>
+        </div>
+    </div>
+
+    <!-- 表单区域 -->
+    <div class="max-w-lg mx-auto px-5 pb-6" id="passport-form-container">
+        <!-- 制造商信息 -->
+        <div id="passport-cat-manufacturer" class="passport-category">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-xs">🏢</span>
+                    制造商信息
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">电池制造商的基本注册信息</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">制造商名称 <span class="text-red-500">*</span></label>
+                        <input type="text" id="dpp-manufacturer-name" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：宁德时代新能源科技股份有限公司" onchange="saveDPPField('manufacturer', 'name', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">注册地址 <span class="text-red-500">*</span></label>
+                        <input type="text" id="dpp-manufacturer-address" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="完整注册地址" onchange="saveDPPField('manufacturer', 'address', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">联系人邮箱</label>
+                        <input type="email" id="dpp-manufacturer-email" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="compliance@company.com" onchange="saveDPPField('manufacturer', 'email', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">EU 授权代表</label>
+                        <input type="text" id="dpp-manufacturer-eu-rep" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如有欧盟授权代表，请填写" onchange="saveDPPField('manufacturer', 'euRepresentative', this.value)">
+                        <p class="text-[11px] text-slate-400 mt-1">非欧盟企业需指定欧盟境内授权代表</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 产品标识 -->
+        <div id="passport-cat-product" class="passport-category hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xs">🔋</span>
+                    产品标识
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">电池产品的基本技术参数</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">产品型号 <span class="text-red-500">*</span></label>
+                        <input type="text" id="dpp-product-model" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：EV-100Ah-3.2V" onchange="saveDPPField('product', 'model', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">电池类别 <span class="text-red-500">*</span></label>
+                        <select id="dpp-product-category" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('product', 'category', this.value)">
+                            <option value="">请选择</option>
+                            <option value="ev">EV动力电池</option>
+                            <option value="lmt">LMT电池</option>
+                            <option value="industrial">工业电池（>2kWh）</option>
+                            <option value="storage">外部储能</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">额定容量 (Ah) <span class="text-red-500">*</span></label>
+                            <input type="number" id="dpp-product-capacity" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="100" onchange="saveDPPField('product', 'capacity', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">额定电压 (V) <span class="text-red-500">*</span></label>
+                            <input type="number" id="dpp-product-voltage" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="3.2" onchange="saveDPPField('product', 'voltage', this.value)">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">质量 (kg)</label>
+                            <input type="number" id="dpp-product-weight" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="电池总质量" onchange="saveDPPField('product', 'weight', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">生产日期</label>
+                            <input type="date" id="dpp-production-date" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" onchange="saveDPPField('product', 'productionDate', this.value)">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">制造工厂地址</label>
+                        <input type="text" id="dpp-factory-address" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="具体生产工厂地址" onchange="saveDPPField('product', 'factoryAddress', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 材料成分 -->
+        <div id="passport-cat-materials" class="passport-category hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-xs">⚗️</span>
+                    材料成分
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">正极/负极/电解液/隔膜的关键材料信息</p>
+                
+                <!-- 正极材料 -->
+                <div class="mb-5 pb-5 border-b border-gray-100">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>正极材料
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">化学体系 <span class="text-red-500">*</span></label>
+                            <select id="dpp-cathode-chemistry" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('materials', 'cathodeChemistry', this.value)">
+                                <option value="">请选择</option>
+                                <option value="ncm811">NCM811</option>
+                                <option value="ncm622">NCM622</option>
+                                <option value="ncm523">NCM523</option>
+                                <option value="ncm111">NCM111</option>
+                                <option value="lfp">LFP（磷酸铁锂）</option>
+                                <option value="lco">LCO（钴酸锂）</option>
+                                <option value="lmo">LMO（锰酸锂）</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">钴含量 (%)</label>
+                                <input type="number" step="0.1" id="dpp-cathode-cobalt" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：12.5" onchange="saveDPPField('materials', 'cathodeCobalt', this.value)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">镍含量 (%)</label>
+                                <input type="number" step="0.1" id="dpp-cathode-nickel" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：55.0" onchange="saveDPPField('materials', 'cathodeNickel', this.value)">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-700 mb-1">锰含量 (%)</label>
+                                <input type="number" step="0.1" id="dpp-cathode-manganese" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：7.0" onchange="saveDPPField('materials', 'cathodeManganese', this.value)">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">正极材料来源</label>
+                            <input type="text" id="dpp-cathode-source" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="供应商名称或内部生产" onchange="saveDPPField('materials', 'cathodeSource', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 负极材料 -->
+                <div class="mb-5 pb-5 border-b border-gray-100">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>负极材料
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">化学体系</label>
+                            <select id="dpp-anode-chemistry" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('materials', 'anodeChemistry', this.value)">
+                                <option value="">请选择</option>
+                                <option value="graphite">人造石墨</option>
+                                <option value="natural-graphite">天然石墨</option>
+                                <option value="silicon">硅基</option>
+                                <option value="lto">钛酸锂（LTO）</option>
+                                <option value="hard-carbon">硬碳</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">负极材料来源</label>
+                            <input type="text" id="dpp-anode-source" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="供应商名称" onchange="saveDPPField('materials', 'anodeSource', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 电解液 -->
+                <div class="mb-5 pb-5 border-b border-gray-100">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>电解液
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">电解质类型</label>
+                            <select id="dpp-electrolyte-type" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('materials', 'electrolyteType', this.value)">
+                                <option value="">请选择</option>
+                                <option value="liquid">液态电解液</option>
+                                <option value="solid">固态电解质</option>
+                                <option value="gel">凝胶电解质</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">电解液来源</label>
+                            <input type="text" id="dpp-electrolyte-source" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="供应商名称" onchange="saveDPPField('materials', 'electrolyteSource', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 隔膜 -->
+                <div>
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>隔膜
+                    </h4>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">隔膜材质</label>
+                            <select id="dpp-separator-material" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('materials', 'separatorMaterial', this.value)">
+                                <option value="">请选择</option>
+                                <option value="pe">PE（聚乙烯）</option>
+                                <option value="pp">PP（聚丙烯）</option>
+                                <option value="ceramic">陶瓷涂层</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">隔膜来源</label>
+                            <input type="text" id="dpp-separator-source" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="供应商名称" onchange="saveDPPField('materials', 'separatorSource', this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回收材料 -->
+        <div id="passport-cat-recycling" class="passport-category hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-green-100 text-green-600 flex items-center justify-center text-xs">♻️</span>
+                    回收材料
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">回收料比例证明（EU 2023/1542 Art.8 要求）</p>
+                
+                <div class="space-y-4">
+                    <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-4">
+                        <p class="text-xs text-amber-800">
+                            <strong>💡 提示：</strong>回收料比例数据通常需要供应商提供第三方证明。如供应商无法提供，需套用欧盟惩罚性默认值。
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">回收钴比例 (%)</label>
+                            <input type="number" step="0.1" id="dpp-recycling-cobalt" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：12.0" onchange="saveDPPField('recycling', 'cobaltRecycled', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">回收锂比例 (%)</label>
+                            <input type="number" step="0.1" id="dpp-recycling-lithium" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：4.0" onchange="saveDPPField('recycling', 'lithiumRecycled', this.value)">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">回收镍比例 (%)</label>
+                            <input type="number" step="0.1" id="dpp-recycling-nickel" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：4.0" onchange="saveDPPField('recycling', 'nickelRecycled', this.value)">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">回收铅比例 (%)</label>
+                            <input type="number" step="0.1" id="dpp-recycling-lead" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：85.0" onchange="saveDPPField('recycling', 'leadRecycled', this.value)">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">回收料证明文件</label>
+                        <div class="border border-dashed border-gray-300 rounded-xl p-4 text-center">
+                            <p class="text-xs text-slate-400 mb-2">📎 上传供应商回收料证明（PDF/图片）</p>
+                            <p class="text-[10px] text-slate-300">MVP版本暂不支持上传，请自行保管文件</p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">供应商回收料配合状态</label>
+                        <select id="dpp-recycling-supplier-status" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('recycling', 'supplierStatus', this.value)">
+                            <option value="">请选择</option>
+                            <option value="confirmed">✅ 已确认可提供证明</option>
+                            <option value="pending">⏳ 沟通中，待回复</option>
+                            <option value="unable">❌ 无法提供，需找替代</option>
+                            <option value="unknown">❓ 尚未联系</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 碳足迹 -->
+        <div id="passport-cat-carbon" class="passport-category hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">🌱</span>
+                    碳足迹
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">可关联合规透镜现有核算结果，或手动填入</p>
+                
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4">
+                        <p class="text-xs text-blue-800">
+                            <strong>🔗 关联提示：</strong>如果你已在合规透镜完成碳足迹核算，可直接复制结果填入此处。
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">总碳足迹 (kgCO₂e/kWh) <span class="text-red-500">*</span></label>
+                        <input type="number" step="0.01" id="dpp-carbon-total" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all" placeholder="如：65.30" onchange="saveDPPField('carbon', 'total', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">计算方法学</label>
+                        <select id="dpp-carbon-methodology" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('carbon', 'methodology', this.value)">
+                            <option value="">请选择</option>
+                            <option value="jrc">JRC 方法学（EU官方）</option>
+                            <option value="iso14067">ISO 14067</option>
+                            <option value="ghg-protocol">GHG Protocol</option>
+                            <option value="other">其他</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">第三方核查状态</label>
+                        <select id="dpp-carbon-verification" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('carbon', 'verificationStatus', this.value)">
+                            <option value="">请选择</option>
+                            <option value="verified">✅ 已通过第三方核查（SGS/TÜV等）</option>
+                            <option value="pending">⏳ 已核算，待核查</option>
+                            <option value="not-started">❌ 尚未开始核算</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">碳足迹等级（自评）</label>
+                        <select id="dpp-carbon-grade" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 transition-all bg-white" onchange="saveDPPField('carbon', 'grade', this.value)">
+                            <option value="">请选择（EU官方阈值尚未公布）</option>
+                            <option value="A">A - 前20%</option>
+                            <option value="B">B - 20%-40%</option>
+                            <option value="C">C - 40%-60%</option>
+                            <option value="D">D - 60%-80%</option>
+                            <option value="E">E - 后20%</option>
+                        </select>
+                        <p class="text-[11px] text-slate-400 mt-1">⚠️ EU官方A-E阈值尚未公布，当前为自评参考</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 供应商 -->
+        <div id="passport-cat-suppliers" class="passport-category hidden">
+            <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm mb-4">
+                <h3 class="font-bold text-slate-800 mb-1 flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs">🏭</span>
+                    供应商信息
+                </h3>
+                <p class="text-xs text-slate-400 mb-4">核心原材料供应商清单（EU 2023/1542 Art.48 要求）</p>
+                
+                <div id="suppliers-list" class="space-y-3">
+                    <!-- 供应商条目会通过JS动态添加 -->
+                </div>
+                
+                <button type="button" onclick="addSupplier()" class="mt-4 w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm text-slate-500 hover:border-emerald-300 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    添加供应商
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 护照预览按钮（固定在底部） -->
+    <div class="sticky bottom-0 bg-white/90 backdrop-blur-md border-t border-gray-100 p-4">
+        <div class="max-w-lg mx-auto flex gap-3">
+            <button type="button" onclick="showPassportPreview()" class="flex-1 bg-gradient-to-r from-slate-800 to-slate-900 text-white py-3.5 rounded-xl font-semibold text-sm hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                预览护照
+            </button>
+        </div>
+    </div>
+
+    <!-- 护照预览模态框 -->
+    <div id="passport-preview-modal" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closePassportPreview()"></div>
+        <div class="absolute inset-x-0 bottom-0 top-20 bg-white rounded-t-3xl overflow-hidden flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 class="font-bold text-slate-800">电池护照预览</h3>
+                <button type="button" onclick="closePassportPreview()" class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-5">
+                <div class="max-w-md mx-auto">
+                    <!-- 护照卡片 -->
+                    <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 rounded-2xl p-6 text-white mb-6 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+                        <div class="relative z-10">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-[10px] font-medium text-white/60 uppercase tracking-wider">Digital Battery Passport</span>
+                                <span id="preview-battery-type" class="px-2 py-0.5 bg-white/10 rounded text-[10px] text-white/80">EV</span>
+                            </div>
+                            <div class="w-16 h-16 bg-white rounded-lg mb-4 flex items-center justify-center">
+                                <svg class="w-10 h-10 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </div>
+                            <h4 id="preview-model" class="text-lg font-bold mb-1">--</h4>
+                            <p id="preview-manufacturer" class="text-xs text-white/60 mb-3">--</p>
+                            <div class="flex gap-4 text-xs text-white/70">
+                                <span id="preview-capacity">-- Ah</span>
+                                <span id="preview-voltage">-- V</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数据 completeness -->
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-slate-700">数据完整度</span>
+                            <span id="preview-completeness" class="text-sm font-bold text-emerald-600">0%</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="preview-completeness-bar" class="h-full bg-emerald-500 rounded-full transition-all" style="width: 0%"></div>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-2">⚠️ 此为模拟预览，非正式DPP。Registry开放后可导出正式数据包。</p>
+                    </div>
+
+                    <!-- 材料成分摘要 -->
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+                        <h5 class="text-sm font-bold text-slate-800 mb-3">材料成分</h5>
+                        <div id="preview-materials" class="space-y-2 text-sm">
+                            <p class="text-slate-400 text-xs">暂无数据</p>
+                        </div>
+                    </div>
+
+                    <!-- 碳足迹摘要 -->
+                    <div class="bg-white border border-gray-100 rounded-xl p-4 mb-4">
+                        <h5 class="text-sm font-bold text-slate-800 mb-3">碳足迹</h5>
+                        <div id="preview-carbon" class="text-sm text-slate-400">
+                            暂无数据
+                        </div>
+                    </div>
+
+                    <!-- 缺失项 -->
+                    <div id="preview-missing" class="bg-red-50 border border-red-100 rounded-xl p-4 mb-6">
+                        <h5 class="text-sm font-bold text-red-700 mb-2">⚠️ 缺失项</h5>
+                        <ul id="preview-missing-list" class="text-xs text-red-600 space-y-1">
+                        </ul>
+                    </div>
+                    
+                    <!-- 底部返回按钮 -->
+                    <div class="sticky bottom-0 bg-white border-t border-gray-100 pt-4 pb-2 -mx-5 px-5">
+                        <button type="button" onclick="closePassportPreview()" class="w-full py-3.5 bg-slate-800 text-white rounded-xl font-semibold text-sm hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            返回继续填写
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Toast通知 -->
 <div id="toast" class="toast"></div>
