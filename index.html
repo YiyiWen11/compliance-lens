@@ -973,6 +973,17 @@ function showPage(page) {
         trackPageExit(currentPageName, duration);
     }
 
+    // page-passport 在 #app 之外:#app 的 min-h-screen 会在页面全 hidden 时
+    // 留下一屏高的空白壳,导致 scrollTo(0,0) 落进空白区。切到 passport 时整体隐藏 #app。
+    const appEl = document.getElementById('app');
+    if (appEl) {
+        if (page === 'passport') {
+            appEl.classList.add('hidden');
+        } else {
+            appEl.classList.remove('hidden');
+        }
+    }
+
     ['home', 'check', 'ai', 'plan', 'passport'].forEach(p => {
         const el = document.getElementById('page-' + p);
         if (el) el.classList.add('hidden');
@@ -980,7 +991,10 @@ function showPage(page) {
     const target = document.getElementById('page-' + page);
     if (target) target.classList.remove('hidden');
 
+    // 双重保险:同时设置 window 和 documentElement 的滚动位置
     window.scrollTo(0, 0);
+    if (document.documentElement) document.documentElement.scrollTop = 0;
+    if (document.body) document.body.scrollTop = 0;
 
     // 记录新页面进入
     if (currentPageName !== page) {
@@ -3602,7 +3616,7 @@ if (document.readyState === 'loading') {
                     </svg>
                 </button>
                 <div>
-                    <h2 class="text-base font-bold text-slate-800">电池护照</h2>
+                    <h2 class="text-xl font-bold text-slate-800">电池护照</h2>
                     <p class="text-[10px] text-slate-400">EU Digital Battery Passport</p>
                 </div>
             </div>
