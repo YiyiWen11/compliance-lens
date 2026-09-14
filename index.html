@@ -3007,9 +3007,8 @@ function startPassportForm() {
         gapSection.classList.remove('hidden');
     }
 
-    // 记录:模式已选 + 表单已展开
+    // 记录:模式已选(表单展开状态不持久化,每次进入都需点「下一步」)
     try { safeLS('set', 'lens_passport_mode_selected', '1'); } catch (e) {}
-    try { safeLS('set', 'lens_passport_form_opened', '1'); } catch (e) {}
 
     // 确保显示第一个可见分类
     showPassportCategory('manufacturer');
@@ -3558,25 +3557,17 @@ function restoreDPPFields() {
         if (nextStepEl) nextStepEl.classList.add('hidden');
     }
 
-    // 检查用户历史状态:选过模式 + 实际展开过表单
+    // 检查用户历史状态:选过模式则恢复选中(但表单始终收起,必须点「下一步」展开)
     const modeSelected = safeLS('get', 'lens_passport_mode_selected');
-    const formOpened = safeLS('get', 'lens_passport_form_opened');
     const formArea = document.getElementById('passport-form-area');
     const gapSection = document.getElementById('passport-gap-section');
 
-    if (formOpened) {
-        // 表单曾展开过(用户按过下一步),后续直接进入完整视图
-        if (formArea) formArea.classList.remove('hidden');
-        if (gapSection) gapSection.classList.remove('hidden');
-        const nextBtn = document.getElementById('passport-next-btn');
-        if (nextBtn) nextBtn.classList.add('hidden');
-        applyPassportMode();
-        setPassportMode(passportMode);
-        showPassportCategory('manufacturer');
-    } else if (modeSelected) {
-        // 选过模式但没展开过表单:保持表单收起,恢复模式选中+显示下一步按钮
-        if (formArea) formArea.classList.add('hidden');
-        if (gapSection) gapSection.classList.add('hidden');
+    // 无论新老用户,每次进入表单都收起,需点「下一步」展开
+    if (formArea) formArea.classList.add('hidden');
+    if (gapSection) gapSection.classList.add('hidden');
+
+    if (modeSelected) {
+        // 恢复模式选中样式 + 显示「下一步」按钮
         applyPassportMode();
         setPassportMode(passportMode);
     } else {
