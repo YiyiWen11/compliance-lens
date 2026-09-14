@@ -2993,6 +2993,9 @@ function setPassportMode(mode) {
         nextBtn.classList.remove('hidden');
         nextBtn.classList.add('fade-in');
     }
+
+    // 保存模式选择,下次进入自动恢复
+    try { safeLS('set', 'lens_passport_mode', mode); } catch (e) {}
 }
 
 // ====== 下一步:展开表单区域 ======
@@ -3520,34 +3523,22 @@ function restoreDPPFields() {
     // 检查引导卡片
     checkPassportGuide();
 
-    // 检查是否有数据
+    // 检查是否有数据(仅用于恢复字段值,不再锁定模式选择)
     const hasData = Object.keys(dppData).some(cat => Object.keys(dppData[cat] || {}).length > 0);
 
-    if (hasData) {
-        // 用户已有数据,禁用模式选择器,根据已填写数量判断模式
-        const selector = document.getElementById('passport-mode-selector');
-        if (selector) {
-            selector.style.opacity = '0.5';
-            selector.style.pointerEvents = 'none';
-        }
-        const filledCount = DPP_FIELDS.filter(f => {
-            const val = dppData[f.category]?.[f.key];
-            return val && String(val).trim() !== '';
-        }).length;
-        if (filledCount > 6) {
-            passportMode = 'full';
-        } else {
-            passportMode = 'quick';
-        }
-    } else {
-        // 新用户,默认快速模式
-        passportMode = 'quick';
-        // 隐藏缺失项分析按钮(用户还没开始填)
+    if (!hasData) {
+        // 新用户:隐藏缺失项分析按钮(用户还没开始填)
         const gapToggleBtn = document.getElementById('gap-toggle-btn');
         if (gapToggleBtn) gapToggleBtn.style.display = 'none';
         // 隐藏下一步建议
         const nextStepEl = document.getElementById('passport-next-step');
         if (nextStepEl) nextStepEl.classList.add('hidden');
+    }
+
+    // 恢复用户上次选择的模式(数据兼容:快速模式字段是完整模式的子集,切换不丢数据)
+    const savedMode = safeLS('get', 'lens_passport_mode');
+    if (savedMode === 'quick' || savedMode === 'full') {
+        passportMode = savedMode;
     }
 
     // 检查用户历史状态:选过模式则恢复选中(但表单始终收起,必须点「下一步」展开)
