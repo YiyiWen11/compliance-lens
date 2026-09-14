@@ -3065,50 +3065,6 @@ function applyPassportMode() {
     });
 }
 
-// ==================== 下一步建议 ====================
-
-    let completed = 0, total = activeFields.length;
-    activeFields.forEach(f => {
-        const val = dppData[f.category]?.[f.key];
-        if (val && String(val).trim() !== '') completed++;
-    });
-
-    // 供应商单独计数(仅在完整模式)
-    if (passportMode === 'full') {
-        const supplierCount = suppliers.length;
-        if (supplierCount > 0) { completed++; }
-        total++;
-    }
-
-    const pct = Math.round((completed / total) * 100);
-
-    const bar = document.getElementById('passport-progress-bar');
-    const text = document.getElementById('passport-progress-text');
-    const completedEl = document.getElementById('passport-completed-count');
-    const pendingEl = document.getElementById('passport-pending-count');
-    const naEl = document.getElementById('passport-na-count');
-
-    if (bar) bar.style.width = pct + '%';
-    if (text) text.textContent = pct + '%';
-    if (completedEl) completedEl.textContent = completed;
-    if (pendingEl) pendingEl.textContent = total - completed;
-    if (naEl) naEl.textContent = '0';
-
-    // 更新缺失项分析
-    renderGapAnalysis();
-
-    // 更新缺失项分析按钮的可见性(只在有数据后显示)
-    const hasStarted = completed > 0;
-    const gapToggleBtn = document.getElementById('gap-toggle-btn');
-    if (gapToggleBtn) {
-        if (hasStarted) {
-            gapToggleBtn.style.display = '';
-        } else {
-            gapToggleBtn.style.display = 'none';
-        }
-    }
-}
-
 // ==================== 缺失项分析 ====================
 
 const GAP_RULES = [
