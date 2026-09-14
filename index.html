@@ -2981,10 +2981,19 @@ function setPassportMode(mode) {
         quickBtn.classList.add('border-gray-200');
     }
 
-    // 实际隐藏/显示字段
+    // 应用字段筛选（隐藏/显示对应字段）
     applyPassportMode();
 
-    // 显示表单区域和缺失项分析（两步流程：先选模式，再填内容）
+    // 显示「下一步」按钮
+    const nextBtn = document.getElementById('passport-next-btn');
+    if (nextBtn) {
+        nextBtn.classList.remove('hidden');
+        nextBtn.classList.add('fade-in');
+    }
+}
+
+// ====== 下一步:展开表单区域 ======
+function startPassportForm() {
     const formArea = document.getElementById('passport-form-area');
     const gapSection = document.getElementById('passport-gap-section');
     if (formArea) {
@@ -2998,13 +3007,15 @@ function setPassportMode(mode) {
     // 保存用户已选择模式的状态
     try { safeLS('set', 'lens_passport_mode_selected', '1'); } catch (e) {}
 
+    // 确保显示第一个可见分类
+    showPassportCategory('manufacturer');
+
     // 重新计算完成度
     updatePassportProgress();
 
     // 滚动到表单区域
     setTimeout(() => {
-        const formAreaEl = document.getElementById('passport-form-area');
-        if (formAreaEl) formAreaEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (formArea) formArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
 }
 
@@ -3552,6 +3563,9 @@ function restoreDPPFields() {
         // 已有数据或之前选过模式,直接显示表单区域和缺失项分析
         if (formArea) formArea.classList.remove('hidden');
         if (gapSection) gapSection.classList.remove('hidden');
+        // 老用户表单已展开,无需再显示「下一步」按钮
+        const nextBtn = document.getElementById('passport-next-btn');
+        if (nextBtn) nextBtn.classList.add('hidden');
         // 应用模式(隐藏/显示字段)
         applyPassportMode();
         // 更新按钮样式
@@ -3709,6 +3723,14 @@ if (document.readyState === 'loading') {
                     </div>
                 </button>
             </div>
+            
+            <!-- 下一步按钮(选择模式后显示) -->
+            <button type="button" onclick="startPassportForm()" id="passport-next-btn" class="hidden w-full mt-3 py-3.5 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all hover:bg-emerald-700 active:scale-[0.98]">
+                <span>下一步</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
         </div>
     </div>
 
