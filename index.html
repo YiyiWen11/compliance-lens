@@ -44,12 +44,6 @@
         .priority-p1 { background: #f59e0b; }
         .priority-p2 { background: #10b981; }
         
-        .btn-primary {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            transition: all 0.2s;
-        }
-        .btn-primary:active { transform: scale(0.98); }
-        
         .peer-ranking { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
         
         .tag-pill {
@@ -106,8 +100,6 @@
             background: #059669;
             border-radius: 2px;
         }
-        
-        .hidden { display: none !important; }
         
         /* === 7站渐进清单样式 === */
         .station-card {
@@ -1140,7 +1132,7 @@
                     <p class="text-sm font-semibold text-gray-800 mb-1">还有具体问题？1v1聊聊</p>
                     <p class="text-xs text-gray-500 mb-3">加我微信，帮你拆解EU合规卡点</p>
                     <div class="flex items-center gap-3">
-                        <img src="wechat-qr.jpg" alt="微信二维码" class="w-20 h-20 rounded-lg border border-gray-200 object-contain bg-white">
+                        <img src="wechat-qr.jpg" alt="微信二维码" onerror="this.style.display='none'" class="w-20 h-20 rounded-lg border border-gray-200 object-contain bg-white">
                         <div class="text-xs text-gray-400">
                             <p>扫码添加</p>
                             <p>备注：合规</p>
@@ -1368,7 +1360,7 @@ function showPage(page) {
         trackPageExit(currentPageName, duration);
     }
     
-    ['home', 'check', 'ai', 'plan'].forEach(p => {
+    ['home', 'check', 'ai', 'plan', 'passport'].forEach(p => {
         const el = document.getElementById('page-' + p);
         if (el) el.classList.add('hidden');
     });
@@ -1390,12 +1382,21 @@ function showPage(page) {
         else if (page === 'check') subtitle.textContent = '合规自检';
         else if (page === 'ai') subtitle.textContent = 'AI合规推演';
         else if (page === 'plan') subtitle.textContent = '完整合规计划';
+        else if (page === 'passport') subtitle.textContent = '电池护照';
     }
     
     if (page === 'ai') { initTuiyan(); }
     
     if (page === 'plan') {
         renderPlanOverview();
+    }
+    
+    if (page === 'passport') {
+        restoreDPPFields();
+        applyPassportMode();
+        setPassportMode(passportMode);
+        showPassportCategory('manufacturer');
+        updatePassportProgress();
     }
 }
 
@@ -1483,8 +1484,8 @@ function selectBatteryType(type, element) {
     const label = document.getElementById('deadline-label'); // 旧头部已删除，label 可能不存在，不阻断
     const count = document.getElementById('deadline-count');
     if (label && type === 'ev') { label.textContent = '标签已强制'; if (count) count.textContent = '护照2027.2'; }
-    else if (label && type === 'lmt') { label.textContent = 'LMT剩余'; if (count) count.textContent = Math.ceil((new Date('2030-02-18') - new Date()) / 86400000) + '天'; }
-    else if (label) { label.textContent = '剩余'; if (count) count.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
+    else if (label && type === 'lmt') { label.textContent = 'LMT剩余'; if (count) count.textContent = daysUntil(DEADLINES.lmt) + '天'; }
+    else if (label) { label.textContent = '剩余'; if (count) count.textContent = daysUntil(DEADLINES.ev) + '天'; }
     
     setTimeout(() => goToCheckStep(2), 300);
 }
@@ -1601,9 +1602,9 @@ function renderResult(totalScore, peerRank) {
     
     const ddlLabel = document.getElementById('result-deadline-label');
     const daysLeftEl = document.getElementById('days-left');
-    if (checkState.batteryType === 'ev') { ddlLabel.textContent = 'EV护照截止'; daysLeftEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
-    else if (checkState.batteryType === 'lmt') { ddlLabel.textContent = 'LMT截止'; daysLeftEl.textContent = Math.ceil((new Date('2030-02-18') - new Date()) / 86400000) + '天'; }
-    else { ddlLabel.textContent = '剩余时间'; daysLeftEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天'; }
+    if (checkState.batteryType === 'ev') { ddlLabel.textContent = 'EV护照截止'; daysLeftEl.textContent = daysUntil(DEADLINES.ev) + '天'; }
+    else if (checkState.batteryType === 'lmt') { ddlLabel.textContent = 'LMT截止'; daysLeftEl.textContent = daysUntil(DEADLINES.lmt) + '天'; }
+    else { ddlLabel.textContent = '剩余时间'; daysLeftEl.textContent = daysUntil(DEADLINES.ev) + '天'; }
     
     const dimContainer = document.getElementById('dimension-details');
     const dimConfig = [
@@ -1692,8 +1693,8 @@ function renderFullPlan() {
         <span class="tag-pill bg-gray-100 text-gray-600">年出口${scaleNames[checkState.scale]}</span>`;
     document.getElementById('plan-battery-type').textContent = batteryTypeNames[checkState.batteryType] || '电池';
     document.getElementById('plan-days').textContent = checkState.batteryType === 'lmt' 
-        ? Math.ceil((new Date('2030-02-18') - new Date()) / 86400000)
-        : Math.ceil((new Date('2027-02-18') - new Date()) / 86400000);
+        ? daysUntil(DEADLINES.lmt)
+        : daysUntil(DEADLINES.ev);
     
     const completedIds = new Set(checkState.completedItems.map(i => i.id));
     
@@ -1733,7 +1734,7 @@ function resetCheck() {
     document.getElementById('check-plan').classList.add('hidden');
     goToCheckStep(1);
     const ddlEl = document.getElementById('deadline-label'); if (ddlEl) ddlEl.textContent = '剩余';
-    const ddcEl = document.getElementById('deadline-count'); if (ddcEl) ddcEl.textContent = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000) + '天';
+    const ddcEl = document.getElementById('deadline-count'); if (ddcEl) ddcEl.textContent = daysUntil(DEADLINES.ev) + '天';
 }
 
 // ==================== 分享 ====================
@@ -2098,7 +2099,7 @@ function resetPlan() {
 
 // ==================== 初始化 ====================
 (function init() {
-    const daysLeft = Math.ceil((new Date('2027-02-18') - new Date()) / 86400000);
+    const daysLeft = daysUntil(DEADLINES.ev);
     const ddcEl2 = document.getElementById('deadline-count'); if (ddcEl2) ddcEl2.textContent = daysLeft + '天';
     // 加载计划进度（静默）
     planState = loadPlanProgress();
@@ -2108,8 +2109,14 @@ function resetPlan() {
 <!-- ====== 三方推演引擎 (from MVP v0.4.0+) ====== -->
 <script>
 
-// ====== 配置 ======
-const API_URL = '/api/debate';  // 走后端代理，隐藏 API Key
+// ====== 全局配置 ======
+const API_URL = '/api/debate';
+const DEADLINES = {
+    ev: '2027-02-18',
+    industrial: '2027-02-18',
+    storage: '2027-02-18',
+    lmt: '2030-02-18'
+};
 let currentQuestion = '';
 let currentResult = {};
 let isLoading = false;
@@ -2123,12 +2130,20 @@ function safeLS(method, key, value) {
     } catch (e) { return null; }
 }
 
-
-// ====== 安全工具函数 ======
+// ====== 统一安全工具函数 ======
 function escapeHtml(str) {
-    if (!str || typeof str !== 'string') return '';
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-    return str.replace(/[&<>"']/g, c => map[c]);
+    if (str == null) return '';
+    if (typeof str !== 'string') str = String(str);
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '/': '&#x2F;' };
+    return str.replace(/[&<>"'\/]/g, c => map[c] || c);
+}
+
+// ====== 计算剩余天数 ======
+function daysUntil(dateStr) {
+    const target = new Date(dateStr);
+    const now = new Date();
+    const diff = target - now;
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 }
 
 // ====== DEMO 数据 ======
@@ -2206,28 +2221,36 @@ function getDeviceID() {
     return id;
 }
 
-async function getUserIP() {
-    if (userIP) return userIP;
+// 配额状态：优先从后端同步，fallback 到本地
+let backendQuota = null;
+
+async function syncQuotaFromBackend() {
     try {
-        const controller = new AbortController();
-        setTimeout(() => controller.abort(), 2000);
-        const res = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
-        const data = await res.json();
-        userIP = data.ip;
-        return userIP;
-    } catch (e) {
-        return 'unknown';
-    }
+        const res = await fetch('/api/quota', { method: 'GET', cache: 'no-store' });
+        if (res.ok) {
+            backendQuota = await res.json();
+        }
+    } catch (e) {}
 }
 
 function getQuotaStatus() {
+    // 优先使用后端配额
+    if (backendQuota && typeof backendQuota.remaining === 'number') {
+        return {
+            remaining: Math.max(0, backendQuota.remaining),
+            used: (backendQuota.total || MAX_DAILY) - Math.max(0, backendQuota.remaining),
+            isNewDay: false
+        };
+    }
+
+    // Fallback: 本地客户端配额（防刷能力弱，仅兜底）
     const today = new Date().toDateString();
     const deviceID = getDeviceID();
     let stored = {};
     try { stored = JSON.parse(safeLS('get', 'cl_usage') || '{}'); } catch(e) {}
 
     if (stored.date !== today) {
-        const fresh = { date: today, deviceID: deviceID, ip: userIP || 'unknown', count: 0 };
+        const fresh = { date: today, deviceID: deviceID, count: 0 };
         safeLS('set', 'cl_usage', JSON.stringify(fresh));
         return { remaining: MAX_DAILY, used: 0, isNewDay: true };
     }
@@ -2250,7 +2273,6 @@ function consumeQuota() {
         safeLS('set', 'cl_usage', JSON.stringify({
             date: today,
             deviceID: getDeviceID(),
-            ip: userIP || 'unknown',
             count: 1
         }));
         return { remaining: MAX_DAILY - 1, used: 1 };
@@ -2410,7 +2432,7 @@ async function startDebate(isDemo = false, isFollowUp = false, questionOverride 
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     try {
         if (isDemo) {
@@ -2984,6 +3006,10 @@ function closeAiShareModal() {
 }
 
 async function downloadAiShareCard() {
+    if (typeof html2canvas === 'undefined') {
+        showToast('分享功能加载中，请刷新页面后重试');
+        return;
+    }
     const element = document.getElementById('ai-share-card-element');
     try {
         const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
@@ -3230,24 +3256,24 @@ let suppliers = loadSuppliers();
 
 function loadDPPData() {
     try {
-        const saved = safeLS.getItem('lens_dpp_data');
+        const saved = safeLS('get', 'lens_dpp_data');
         return saved ? JSON.parse(saved) : {};
     } catch (e) { return {}; }
 }
 
 function saveDPPData() {
-    try { safeLS.setItem('lens_dpp_data', JSON.stringify(dppData)); } catch (e) {}
+    try { safeLS('set', 'lens_dpp_data', JSON.stringify(dppData)); } catch (e) {}
 }
 
 function loadSuppliers() {
     try {
-        const saved = safeLS.getItem('lens_dpp_suppliers');
+        const saved = safeLS('get', 'lens_dpp_suppliers');
         return saved ? JSON.parse(saved) : [];
     } catch (e) { return []; }
 }
 
 function saveSuppliers() {
-    try { safeLS.setItem('lens_dpp_suppliers', JSON.stringify(suppliers)); } catch (e) {}
+    try { safeLS('set', 'lens_dpp_suppliers', JSON.stringify(suppliers)); } catch (e) {}
 }
 
 function saveDPPField(category, key, value) {
@@ -3288,7 +3314,7 @@ function showSaveFeedback(inputEl) {
 
 // ==================== 引导卡片 ====================
 function checkPassportGuide() {
-    const guideDismissed = safeLS.getItem('lens_passport_guide_dismissed');
+    const guideDismissed = safeLS('get', 'lens_passport_guide_dismissed');
     const guide = document.getElementById('passport-guide');
     if (guide && !guideDismissed) {
         guide.classList.remove('hidden');
@@ -3302,7 +3328,7 @@ function dismissPassportGuide() {
         guide.style.transition = 'opacity 0.3s ease';
         setTimeout(() => guide.classList.add('hidden'), 300);
     }
-    try { safeLS.setItem('lens_passport_guide_dismissed', '1'); } catch (e) {}
+    try { safeLS('set', 'lens_passport_guide_dismissed', '1'); } catch (e) {}
 }
 
 // ==================== 快速模式 ====================
@@ -3945,45 +3971,7 @@ function restoreDPPFields() {
     updatePassportProgress();
 }
 
-// 修改showPage函数支持passport
-const originalShowPage = showPage;
-showPage = function(page) {
-    if (page === 'passport') {
-        // 页面切换前记录
-        const duration = Math.round((Date.now() - pageEnterTime) / 1000);
-        if (duration > 0 && currentPageName !== page) {
-            trackPageExit(currentPageName, duration);
-        }
-        
-        ['home', 'check', 'ai', 'plan', 'passport'].forEach(p => {
-            const el = document.getElementById('page-' + p);
-            if (el) el.classList.add('hidden');
-        });
-        const target = document.getElementById('page-passport');
-        if (target) {
-            target.classList.remove('hidden');
-            restoreDPPFields();
-        }
-        
-        window.scrollTo(0, 0);
-        
-        if (currentPageName !== page) {
-            currentPageName = page;
-            pageEnterTime = Date.now();
-            trackPageView(page);
-        }
-        
-        const subtitle = document.getElementById('header-subtitle');
-        if (subtitle) subtitle.textContent = '电池护照';
-        return;
-    }
-    
-    // 从护照页面切换到其他页面时，确保护照页面被隐藏
-    const passportEl = document.getElementById('page-passport');
-    if (passportEl) passportEl.classList.add('hidden');
-    
-    return originalShowPage(page);
-};
+
 
 // 页面加载时恢复数据
 if (document.readyState === 'loading') {
