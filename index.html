@@ -3004,8 +3004,9 @@ function startPassportForm() {
         gapSection.classList.remove('hidden');
     }
 
-    // 保存用户已选择模式的状态
+    // 记录:模式已选 + 表单已展开
     try { safeLS('set', 'lens_passport_mode_selected', '1'); } catch (e) {}
+    try { safeLS('set', 'lens_passport_form_opened', '1'); } catch (e) {}
 
     // 确保显示第一个可见分类
     showPassportCategory('manufacturer');
@@ -3554,24 +3555,27 @@ function restoreDPPFields() {
         if (nextStepEl) nextStepEl.classList.add('hidden');
     }
 
-    // 检查用户是否已选择过模式
+    // 检查用户历史状态:选过模式 + 实际展开过表单
     const modeSelected = safeLS('get', 'lens_passport_mode_selected');
+    const formOpened = safeLS('get', 'lens_passport_form_opened');
     const formArea = document.getElementById('passport-form-area');
     const gapSection = document.getElementById('passport-gap-section');
 
-    if (hasData || modeSelected) {
-        // 已有数据或之前选过模式,直接显示表单区域和缺失项分析
+    if (formOpened) {
+        // 表单曾展开过(用户按过下一步),后续直接进入完整视图
         if (formArea) formArea.classList.remove('hidden');
         if (gapSection) gapSection.classList.remove('hidden');
-        // 老用户表单已展开,无需再显示「下一步」按钮
         const nextBtn = document.getElementById('passport-next-btn');
         if (nextBtn) nextBtn.classList.add('hidden');
-        // 应用模式(隐藏/显示字段)
         applyPassportMode();
-        // 更新按钮样式
         setPassportMode(passportMode);
-        // 确保显示第一个可见分类
         showPassportCategory('manufacturer');
+    } else if (modeSelected) {
+        // 选过模式但没展开过表单:保持表单收起,恢复模式选中+显示下一步按钮
+        if (formArea) formArea.classList.add('hidden');
+        if (gapSection) gapSection.classList.add('hidden');
+        applyPassportMode();
+        setPassportMode(passportMode);
     } else {
         // 新用户,隐藏表单区域和缺失项分析,只显示进度和模式选择
         if (formArea) formArea.classList.add('hidden');
