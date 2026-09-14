@@ -60,8 +60,10 @@ echo "  ✅ 后端代理依赖安装完成"
 
 echo
 echo "[4/8] 复制前端文件..."
-# 假设当前目录有 index.html
 cp index.html ${WWW_DIR}/
+cp styles.css ${WWW_DIR}/
+mkdir -p ${WWW_DIR}/public
+cp -r public/* ${WWW_DIR}/public/
 echo "  ✅ 前端文件复制完成"
 
 echo

@@ -1,0 +1,13 @@
+{
+  "name": "合规透镜 - 电池EU合规自检",
+  "short_name": "合规透镜",
+  "description": "电池EU合规自检与AI咨询工具",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#059669",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/public/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
