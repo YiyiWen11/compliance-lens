@@ -1847,9 +1847,11 @@ async function syncQuotaFromBackend() {
 function getQuotaStatus() {
     // 优先使用后端配额
     if (backendQuota && typeof backendQuota.remaining === 'number') {
+        const total = backendQuota.total || MAX_DAILY;
         return {
             remaining: Math.max(0, backendQuota.remaining),
-            used: (backendQuota.total || MAX_DAILY) - Math.max(0, backendQuota.remaining),
+            used: total - Math.max(0, backendQuota.remaining),
+            total: total,
             isNewDay: false
         };
     }
@@ -1863,7 +1865,7 @@ function getQuotaStatus() {
     if (stored.date !== today) {
         const fresh = { date: today, deviceID: deviceID, count: 0 };
         safeLS('set', 'cl_usage', JSON.stringify(fresh));
-        return { remaining: MAX_DAILY, used: 0, isNewDay: true };
+        return { remaining: MAX_DAILY, used: 0, total: MAX_DAILY, isNewDay: true };
     }
 
     if (stored.deviceID !== deviceID) {
@@ -1872,7 +1874,7 @@ function getQuotaStatus() {
     }
 
     const used = stored.count || 0;
-    return { remaining: Math.max(0, MAX_DAILY - used), used: used, isNewDay: false };
+    return { remaining: Math.max(0, MAX_DAILY - used), used: used, total: MAX_DAILY, isNewDay: false };
 }
 
 function consumeQuota() {
@@ -1907,14 +1909,15 @@ function updateQuotaUI() {
 
     if (dots) {
         dots.innerHTML = '';
-        for (let i = 0; i < MAX_DAILY; i++) {
+        const totalDots = status.total || MAX_DAILY;
+        for (let i = 0; i < totalDots; i++) {
             const color = i < status.remaining ? 'bg-green-500' : 'bg-gray-200';
             dots.innerHTML += `<span class="w-2 h-2 rounded-full ${color}"></span>`;
         }
     }
 
     if (text) {
-        text.textContent = `${status.remaining}/${MAX_DAILY}`;
+        text.textContent = `${status.remaining}/${status.total || MAX_DAILY}`;
         text.className = status.remaining === 0
             ? 'text-xs font-bold text-red-500'
             : status.remaining <= 2

@@ -57,7 +57,7 @@ function writeLog(baseName, line) {
 
 // ========== 配额限制（内存级，重启清零） ==========
 const quotaStore = new Map(); // ip -> { count, date }
-const QUOTA_PER_IP_PER_DAY = parseInt(process.env.QUOTA_PER_IP_PER_DAY, 10) || 20;
+const QUOTA_PER_IP_PER_DAY = parseInt(process.env.QUOTA_PER_IP_PER_DAY, 10) || 5;
 
 function checkQuota(ip) {
     const today = new Date().toDateString();
