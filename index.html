@@ -1990,7 +1990,7 @@ function copyWechatID() {
 document.addEventListener('tuiyan-init', async () => {
     // 清理旧版本遗留数据
     safeLS('remove', 'usage_limit');
-    await getUserIP();
+    await syncQuotaFromBackend();
     updateQuotaUI();
 });
 
@@ -2785,6 +2785,8 @@ function initTuiyan() {
         hideTuiyanAll();
         document.getElementById('page-ai-tuiyan').classList.remove('hidden');
     }
+    // 同步后端配额
+    syncQuotaFromBackend().then(() => updateQuotaUI());
 }
 </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -3419,11 +3421,6 @@ function renderSuppliers() {
             </div>
         </div>
     `).join('');
-}
-
-function escapeHtml(text) {
-    if (!text) return '';
-    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function showPassportPreview() {
